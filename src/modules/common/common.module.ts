@@ -5,9 +5,9 @@ import { forwardRef, Module } from '@nestjs/common';
 
 @Module({
   imports: [
-    forwardRef(() => UsersModule),
-    forwardRef(() => PaymentModule),
-    forwardRef(() => SmsModule),
+    // forwardRef(() => UsersModule),
+    // forwardRef(() => PaymentModule),
+    // forwardRef(() => SmsModule),
   ],
 })
 export class CommonModule {}

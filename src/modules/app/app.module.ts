@@ -14,6 +14,7 @@ import ormconfig from '@config/databases/ormconfig';
 import { AppController } from '@modules/app/controllers/app.controller';
 import { AppService } from '@modules/app/services';
 import { SmsModule } from '@modules/sms/sms.module';
+import { JxMobiModule } from '@modules/jxmobi/jxmobi.module';
 
 @Module({
   imports: [
@@ -21,13 +22,14 @@ import { SmsModule } from '@modules/sms/sms.module';
       ttl: 60,
       limit: 10,
     }),
-    TypeOrmModule.forRoot(ormconfig),
-    PassportModule,
-    AccessControlModule.forRoles(roles),
-    AuthModule,
-    PaymentModule,
-    UsersModule,
-    SmsModule,
+    // TypeOrmModule.forRoot(ormconfig),
+    // PassportModule,
+    // AccessControlModule.forRoles(roles),
+    //AuthModule,
+    //PaymentModule,
+    //UsersModule,
+    //SmsModule,
+    JxMobiModule,
     CommonModule,
   ],
   controllers: [AppController],

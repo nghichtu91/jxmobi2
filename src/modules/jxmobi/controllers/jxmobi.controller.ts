@@ -22,12 +22,11 @@ export class JxmobiController {
   @ApiResponse({
     type: RechangeReponse,
   })
-  rechagePost(@Body() playerData: IRechangeRequest): RechangeReponse {
+  rechagePost(@Body() playerData: IRechangeRequest) {
     this.logger.log('rechage', playerData);
-    const reponse = new RechangeReponse();
-    reponse.Status = 1;
-    reponse.Value = 10000;
-    reponse.Msg = 'xin chao';
-    return reponse;
+    const reponse = { Status: 1, Value: 10000, Msg: 'xin chao' };
+    const converted = JSON.stringify(reponse);
+    const arrByte = Uint8Array.from(Buffer.from(converted));
+    return arrByte;
   }
 }

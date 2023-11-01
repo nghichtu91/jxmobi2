@@ -26,7 +26,7 @@ export class JxmobiController {
     this.logger.log('rechage', playerData);
     const reponse = new RechangeReponse();
     reponse.Status = 1;
-    reponse.Value = playerData.Value || 1000;
+    reponse.Value = 10000;
     reponse.Msg = 'xin chao';
     return reponse;
   }

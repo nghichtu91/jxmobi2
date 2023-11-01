@@ -49,6 +49,6 @@ export function prodConfig(app: NestExpressApplication): void {
       );
     else app.use(morgan(logFormat, { stream: accessLogStream }));
   }
-
+  app.set('trust proxy', true);
   app.disable('x-powered-by');
 }

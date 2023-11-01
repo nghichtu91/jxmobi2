@@ -33,14 +33,26 @@ import {
 
 const { combine, timestamp, label, printf } = format;
 
-const myFormat = printf(({ level, message, label, timestamp, context }) => {
+const timezoned = () => {
+  return new Date().toLocaleString('en-US', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+  });
+};
+
+const myFormat = printf(({ message, label, timestamp, context }) => {
   return `${timestamp} [${label}] [${context}] ${message}`;
 });
 
 async function bootstrap() {
   const instance = createLogger({
     // options of Winston
-    format: combine(label({ label: 'jxhub' }), timestamp(), myFormat),
+    format: combine(
+      label({ label: 'jxhub' }),
+      timestamp({
+        format: timezoned,
+      }),
+      myFormat,
+    ),
     transports: [
       new winston.transports.File({ filename: 'error.log', level: 'error' }),
       new winston.transports.File({

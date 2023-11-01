@@ -1,6 +1,5 @@
 import {
   SmsActions,
-  SmsKeyPrimary,
   SmsKeySub,
   SmsMsgFailed,
   SmsServiceNumber,
@@ -119,23 +118,47 @@ export class SmsController {
   //     return '0|Có lỗi trong quá trình xử lý, vui lòng liên hệ gm.';
   //   }
   // }
+  converHexToText(
+    str:
+      | WithImplicitCoercion<string>
+      | { [Symbol.toPrimitive](hint: 'string'): string },
+  ) {
+    return Buffer.from(str, 'hex').toString('utf8');
+  }
 
   @Get('sms-callback')
   async getcallbacksms(@Query() qu: CallbackDTO) {
-    this.logger.log(`${qu.mobile}`, 'sms-callback');
+    this.logger.log(`${qu.phone}`, 'sms-callback');
+
+    if (!qu.sms) {
+      this.logger.error('No sms', 'sms-callback');
+      return false;
+    }
+
     try {
-      const strs = qu.info.trim().toLowerCase().split(SmsKeySub.toLowerCase());
-      this.logger.log(strs[1].trim() as unknown as number);
+      // const strs = qu.info
+      //   ?.trim()
+      //   ?.toLowerCase()
+      //   .split(SmsKeySub?.toLowerCase());
+      const bnbnb = this.converHexToText(qu.sms);
+      const strs = bnbnb?.trim()?.toLowerCase().split(SmsKeySub?.toLowerCase());
+      const requestId = strs[1]?.trim();
+
+      if (!requestId) {
+        throw new Error('Không xác định được yêu cầu');
+      }
+
       const smsEntity = await this.smsService.findById(
-        strs[1] as unknown as number,
+        requestId as unknown as number,
       );
+
       if (!smsEntity) {
-        return `0|${SmsMsgNotFound}`;
+        return `${SmsMsgNotFound}`;
       }
 
       if (!smsEntity.validTime()) {
         this.smsService.update(smsEntity.id, { status: 2 });
-        return `0|${SmsMsgExpired}`;
+        return `${SmsMsgExpired}`;
       }
 
       const userEntitys = await this.userService.findByUserName(
@@ -144,8 +167,8 @@ export class SmsController {
 
       const userEntity = userEntitys[0];
 
-      if (userEntity.phone !== `0${qu.mobile.substring(2)}`) {
-        return `0|${SmsMsgPhoneNotMatch}`;
+      if (userEntity.phone !== `0${qu?.phone?.substring(2)}`) {
+        return `${SmsMsgPhoneNotMatch}`;
       }
 
       let userUpdate: IUpdateUserDTO = {};
@@ -157,6 +180,7 @@ export class SmsController {
             phone: smsEntity.info1,
           };
           break;
+        case 'forgotpass':
         case 'passwordchange':
           msg = SmsMsgChangePassWordSuccessfully.replace('%s', smsEntity.info1);
           userUpdate = {
@@ -192,11 +216,11 @@ export class SmsController {
       await this.userService.update(smsEntity.userName, userUpdate);
       this.smsService.update(smsEntity.id, { status: 1 });
 
-      return `0|${msg}`;
+      return `${msg}`;
     } catch (e: unknown) {
       const errors = e as Error;
       this.logger.error(errors.message, errors.name);
-      return `0|${SmsMsgFailed}`;
+      return `${SmsMsgFailed}`;
     }
   }
 
@@ -227,12 +251,40 @@ export class SmsController {
         `${currentUser.username} tạo yêu xử lý bằng sms thành công!`,
       );
       return {
-        message: `${SmsKeyPrimary} ${SmsKeySub} ${smsCreated.id} gửi ${SmsServiceNumber}.`, // code send sms
+        message: `${SmsKeySub} ${smsCreated.id} gửi ${SmsServiceNumber}.`, // code send sms
       };
     } catch (e: unknown) {
       const errors = e as Error;
       this.logger.log(
         `${currentUser.username} Tạo yêu xử lý bằng sms thất bại. ${errors.message}`,
+        errors.name,
+      );
+      throw new HttpException(``, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+  }
+
+  @Post('sms-request-password-forgot')
+  @ApiOperation({ summary: 'Tạo yêu thay đổi thông bằng sms' })
+  @ApiOkResponse()
+  @ApiResponse({
+    status: HttpStatus.SERVICE_UNAVAILABLE,
+    description: 'Server error',
+  })
+  async smsRequestForgot(@Body() body: CreateSmsParams) {
+    const data = new CreateDTO(body);
+    data.action = 'forgotpass';
+    data.userName = data.info2;
+
+    try {
+      const smsCreated = await this.smsService.add(data);
+      this.logger.log(`${data.userName} tạo yêu xử lý bằng sms thành công!`);
+      return {
+        message: `${SmsKeySub} ${smsCreated.id} gửi ${SmsServiceNumber}.`, // code send sms
+      };
+    } catch (e: unknown) {
+      const errors = e as Error;
+      this.logger.log(
+        `${data.userName} Tạo yêu xử lý bằng sms thất bại. ${errors.message}`,
         errors.name,
       );
       throw new HttpException(``, HttpStatus.SERVICE_UNAVAILABLE);

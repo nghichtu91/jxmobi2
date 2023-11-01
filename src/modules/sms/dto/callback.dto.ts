@@ -12,29 +12,47 @@ export interface ICallbackDTO {
 
 export class CallbackDTO implements ICallbackDTO {
   @IsOptional()
-  @ApiProperty()
+  @ApiProperty({ required: false })
   code: string;
 
   @IsOptional()
-  @ApiProperty()
+  @ApiProperty({ required: false })
   subCode: string;
 
   @IsOptional()
-  @ApiProperty()
+  @ApiProperty({ required: false })
   mobile: string;
 
   @IsOptional()
-  @ApiProperty()
+  @ApiProperty({ required: false })
   serviceNumber: string;
 
   /**
    * id yêu cầu
    */
   @IsOptional()
-  @ApiProperty()
+  @ApiProperty({ required: false })
   info: string;
 
   // @IsOptional()
   // @ApiProperty()
   // REMOTE_ADDR: string;
+
+  // sv1
+
+  @IsOptional()
+  @ApiProperty({ required: false })
+  phone?: string;
+
+  @IsOptional()
+  @ApiProperty({ required: false })
+  shortcode?: string;
+
+  @IsOptional()
+  @ApiProperty({ required: false })
+  gateway?: string;
+
+  @IsOptional()
+  @ApiProperty({ required: false })
+  sms?: string;
 }

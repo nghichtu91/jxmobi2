@@ -1,6 +1,10 @@
 import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { CreateUserDTO, UpdateUserDTO } from '@modules/user/dtos';
+import {
+  CreateUserDTO,
+  IUpdateUserDTO,
+  UpdateUserDTO,
+} from '@modules/user/dtos';
 import { UserEntity } from '@modules/user/entities';
 import { IReqUser } from '@shared';
 import { UserService } from '@user/services';
@@ -83,9 +87,29 @@ export class AuthService {
         throw new Error('USER_NOT_FOUND');
       }
       const user = users[0];
-      if (user.beforCheckForgotPassword(data)) {
-        throw new Error('INFO_NOT_MATCH');
+
+      const datacheck: IUpdateUserDTO = {
+        phone: data.phone,
+        answer: data.answer,
+        passWordSecond: data.passWord,
+        question: data.question,
+      };
+
+      if (user.checkPassWordSecond(datacheck)) {
+        throw new Error(`Mật khẩu cấp 2 không đúng.`);
       }
+      if (user.checkPhone(datacheck)) {
+        throw new Error(`Số điện thoại không đúng.`);
+      }
+
+      if (user.checkQuestion(datacheck)) {
+        throw new Error(`Câu hỏi bí mật không đúng.`);
+      }
+
+      if (user.checkAnswer(datacheck)) {
+        throw new Error(`Câu trả lời không đúng.`);
+      }
+
       const update: UpdateUserDTO = { passWord: data.passWord || '123456789' };
       await this.userService.update(data.userName, update);
       this.logger.log(

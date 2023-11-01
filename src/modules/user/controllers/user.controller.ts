@@ -383,12 +383,31 @@ export class UserController {
     }
 
     let updateParams: UpdateUserDTO = {};
-    if (
-      findingUser[0].beforeChangeCheckInfo(data) &&
-      action !== 'firstupdate'
-    ) {
+
+    if (findingUser[0].checkPassWordSecond(data) && action !== 'firstupdate') {
       throw new HttpException(
-        `Thông tin kiểm tra không đúng, vui lòng kiểm tra lại!`,
+        `Mật khẩu cấp 2 không đúng.`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (findingUser[0].checkPhone(data) && action !== 'firstupdate') {
+      throw new HttpException(
+        `Số điện thoại không đúng.`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (findingUser[0].checkQuestion(data) && action !== 'firstupdate') {
+      throw new HttpException(
+        `Câu hỏi bí mật không đúng.`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (findingUser[0].checkAnswer(data) && action !== 'firstupdate') {
+      throw new HttpException(
+        `Câu trả lời không đúng.`,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -408,6 +427,7 @@ export class UserController {
         updateParams = {
           passWordSecond: data.newPassWordSecond,
         };
+        break;
       case 'changesecretquestion':
         updateParams = {
           question: data.newSecretQuestion,

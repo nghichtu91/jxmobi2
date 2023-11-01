@@ -220,6 +220,29 @@ export class UserEntity extends BaseEntity implements IBaseModel<IUserModel> {
     this.point7 = 0;
   }
 
+  checkPhone(params: IUpdateUserDTO) {
+    return this.phone !== params.phone;
+  }
+
+  checkQuestion(params: IUpdateUserDTO) {
+    return this.question !== params.question;
+  }
+
+  checkAnswer(params: IUpdateUserDTO) {
+    return this.answer?.toLowerCase() !== params?.answer?.toLowerCase();
+  }
+
+  checkPassWordSecond(params: IUpdateUserDTO) {
+    return (
+      this.passWordSecond !==
+      createHash('md5')
+        .update(params.passWordSecond)
+        .digest('hex')
+        .toString()
+        .toLocaleUpperCase()
+    );
+  }
+
   /**
    * @param {IUpdateUserDTO} params
    * @returns {boolean}
@@ -229,7 +252,12 @@ export class UserEntity extends BaseEntity implements IBaseModel<IUserModel> {
       this.phone !== params.phone ||
       this.question !== params.question ||
       this.answer !== params.answer ||
-      this.secPasswordNoEncrypt !== params.passWordSecond
+      this.passWordSecond !==
+        createHash('md5')
+          .update(params.passWordSecond)
+          .digest('hex')
+          .toString()
+          .toLocaleUpperCase()
     );
   }
 

@@ -42,7 +42,8 @@ export const CardPriceList = {
 };
 
 export const Cardbonus = +process.env.CARD_BONUS || 0; // tính %;
-export const GATEWAY_URL = 'http://naptudong.com/chargingws/v2';
+export const GATEWAY_URL =
+  process.env.GATEWAY_URL || 'https://naptudong.com/chargingws/v2';
 export const PARTNER_ID = PARTNERID;
 export const PARTNER_KEY = PARTNERKEY;
 

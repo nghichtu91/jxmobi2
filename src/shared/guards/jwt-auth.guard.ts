@@ -16,11 +16,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   }
 
   handleRequest(err: any, user: any, info: Error) {
-    if (!!info && `${info?.message}` === 'No auth token') {
-      throw err || new HttpException(`${info}`, HttpStatus.UNAUTHORIZED);
+    if (err || !user) {
+      throw (
+        err || new HttpException(`${info?.message}`, HttpStatus.UNAUTHORIZED)
+      );
     }
-
-    if (!user) return { roles: ['GUEST'] };
-    else return user;
+    // if (!user) return { roles: ['GUEST'] };
+    return user;
   }
 }

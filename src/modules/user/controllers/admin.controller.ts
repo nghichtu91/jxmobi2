@@ -194,6 +194,7 @@ export class AdminController {
             phone: '',
             question: '',
             answer: '',
+            email: '',
           };
           await this.userService.update(username, resetUpdate);
           break;

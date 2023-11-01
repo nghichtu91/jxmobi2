@@ -1,6 +1,6 @@
-import { Controller, Get, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { RechangeReponse } from '../dtos/rechange.dto';
+import { IRechangeRequest, RechangeReponse } from '../dtos/rechange.dto';
 
 @ApiTags('jxmobi')
 @Controller('jxmobi')
@@ -22,10 +22,12 @@ export class JxmobiController {
   @ApiResponse({
     type: RechangeReponse,
   })
-  rechagePost(playerData: any): RechangeReponse {
+  rechagePost(@Body() playerData: IRechangeRequest): RechangeReponse {
     this.logger.log('rechage', playerData);
     const reponse = new RechangeReponse();
     reponse.Status = 1;
+    reponse.Value = playerData.Value || 1000;
+    reponse.Msg = 'xin chao';
     return reponse;
   }
 }

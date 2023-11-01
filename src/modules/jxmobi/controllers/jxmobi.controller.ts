@@ -14,7 +14,7 @@ export class JxmobiController {
   rechage(playerData: any): RechangeReponse {
     this.logger.log('rechage', playerData);
     const reponse = new RechangeReponse();
-    reponse.status = 1;
+    reponse.Status = 1;
     return reponse;
   }
 
@@ -25,7 +25,7 @@ export class JxmobiController {
   rechagePost(playerData: any): RechangeReponse {
     this.logger.log('rechage', playerData);
     const reponse = new RechangeReponse();
-    reponse.status = 1;
+    reponse.Status = 1;
     return reponse;
   }
 }

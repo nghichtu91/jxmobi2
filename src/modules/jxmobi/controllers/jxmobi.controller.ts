@@ -18,6 +18,14 @@ export class JxmobiController {
     return reponse;
   }
 
+ toBytes = (text: string): number[] => {
+    const buffer = Buffer.from(text, 'utf8');
+    const result = Array(buffer.length);
+    for (let i = 0; i < buffer.length; ++i) {
+        result[i] = buffer[i];
+    }
+    return result;
+};
   @Post('rechage')
   @ApiResponse({
     type: RechangeReponse,
@@ -26,7 +34,6 @@ export class JxmobiController {
     this.logger.log('rechage', playerData);
     const reponse = { Status: 1, Value: 10000, Msg: 'xin chao' };
     const converted = JSON.stringify(reponse);
-    const arrByte = Uint8Array.from(Buffer.from(converted));
-    return arrByte;
+    return this.toBytes(converted);
   }
 }

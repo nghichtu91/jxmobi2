@@ -2,10 +2,10 @@ import { UsersModule } from '@modules/user/user.module';
 import { HttpModule } from '@nestjs/axios';
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PaymentController } from './controllers';
+// import { PaymentController } from './controllers';
 import { PaymentEntity } from './entities';
 import { PaymentService } from './services';
-import { PaymentSubscriber } from './subscribers';
+// import { PaymentSubscriber } from './subscribers';
 import { TelegramModule } from 'nestjs-telegram';
 import { BOT_KEY } from '@config';
 
@@ -19,8 +19,8 @@ import { BOT_KEY } from '@config';
     HttpModule,
     UsersModule,
   ],
-  providers: [PaymentService, PaymentSubscriber],
-  controllers: [PaymentController],
+  providers: [],
+  controllers: [],
   exports: [PaymentService],
 })
 export class PaymentModule {}

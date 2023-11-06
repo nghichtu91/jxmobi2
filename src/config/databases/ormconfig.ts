@@ -12,9 +12,8 @@ import {
   databaseUsername,
 } from './mssql-config';
 
-import { UserEntity, UserPlayTimeEntity } from '@modules/user/entities';
-import { PaymentEntity } from '@modules/payment/entities';
-import { SmsEntity } from '@modules/sms/entities/sms.entity';
+import { UserEntity } from '@modules/user/entities';
+import { KTCoinEntity } from '@modules/jxmobi/entties/ktcoin.entity';
 
 export default {
   type: databaseType,
@@ -30,7 +29,7 @@ export default {
   cache: databaseEnableCache
     ? { duration: parseDuration(databaseCacheDuration) }
     : false,
-  entities: [UserEntity, UserPlayTimeEntity, PaymentEntity, SmsEntity],
+  entities: [UserEntity, KTCoinEntity],
   options: {
     encrypt: false,
   },

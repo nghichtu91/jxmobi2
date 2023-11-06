@@ -24,9 +24,9 @@ export class PaymentService implements IPaymentService {
     private readonly httpService: HttpService,
   ) {}
 
-  checkCardMobi(data: any): Observable<AxiosResponse<IPaymentResponseB>> {
+  checkCardMobi(): void {
     console.log(GATEWAY_URL);
-    return this.httpService.post<IPaymentResponseB>(GATEWAY_URL, data);
+    // return this.httpService.post<IPaymentResponseB>(GATEWAY_URL, data);
   }
 
   instert(data: CreatePaymentDTO) {

@@ -22,7 +22,7 @@ import { JxMobiModule } from '@modules/jxmobi/jxmobi.module';
       ttl: 60,
       limit: 10,
     }),
-    // TypeOrmModule.forRoot(ormconfig),
+    TypeOrmModule.forRoot(ormconfig),
     // PassportModule,
     // AccessControlModule.forRoles(roles),
     //AuthModule,

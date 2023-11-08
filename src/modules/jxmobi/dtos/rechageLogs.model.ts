@@ -1,6 +1,7 @@
 export interface IRechageLogs {
   ID: number;
   UserID: number;
+  UserName: string;
   CoinValue: number;
   BeforeCoin: number;
   AfterCoin: number;

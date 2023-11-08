@@ -1,11 +1,11 @@
-import { KTCoinEntity } from '@modules/jxmobi/entties';
+import { JxMobiModule } from '@modules/jxmobi/jxmobi.module';
 import { forwardRef, Module } from '@nestjs/common';
 
 @Module({
   imports: [
     // forwardRef(() => UsersModule),
     // forwardRef(() => PaymentModule),
-    forwardRef(() => KTCoinEntity),
+    forwardRef(() => JxMobiModule),
   ],
 })
 export class CommonModule {}

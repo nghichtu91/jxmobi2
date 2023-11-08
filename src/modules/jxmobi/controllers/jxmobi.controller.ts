@@ -7,22 +7,27 @@ import {
   Body,
   HttpException,
   HttpStatus,
-  Res,
   Put,
 } from '@nestjs/common';
-import { Response } from 'express';
 import { ApiOkResponse, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { RechangeReponse } from '../dtos/rechange.dto';
 import { KTCoinCreateDto } from '../dtos/ktcoinCreate.dto';
 import { KTCoinService } from '../services/ktcoin.service';
 import { QueryFailedError } from 'typeorm';
 import { KTCoinUpdateDto } from '../dtos/ktcoinUpdate.dto';
+import { RechangeService } from '../services/rechange.service';
+import { IRechangeRequest } from '../dtos/rẹchageRequest.dto';
+import { RechangeCreateDto } from '../dtos/rechangeCreate.dto';
 
 @ApiTags('jxmobi')
 @Controller('jxmobi')
 export class JxmobiController {
   private readonly logger = new Logger(JxmobiController.name);
-  constructor(private readonly ktCoinService: KTCoinService) {}
+  constructor(
+    private readonly ktCoinService: KTCoinService,
+    private readonly rechangeService: RechangeService,
+  ) {}
+
   @Get('rechage')
   @ApiResponse({
     type: RechangeReponse,
@@ -37,13 +42,35 @@ export class JxmobiController {
   @ApiQuery({
     name: 'playdata',
     type: String,
+    allowEmptyValue: true,
+    required: false,
   })
   @ApiOkResponse({
     type: String,
     description: 'Trả về thông tin số kcoin hiện có',
   })
-  rechagePost(@Query('playdata') playdata: string) {
-    this.logger.log('rechage', playdata);
+  rechagePost(
+    @Query('playdata')
+    rechageRequest: string,
+  ) {
+    if (!rechageRequest) {
+      rechageRequest = JSON.stringify({
+        Value: 10000,
+        Type: 2,
+        UserID: 111,
+        RoleID: 3434,
+        RoleName: '232323',
+        SeverID: 1,
+      });
+    }
+
+    const rechageRequestDto = JSON.parse(
+      rechageRequest,
+    ) as unknown as IRechangeRequest;
+
+    const rechageDto = new RechangeCreateDto(rechageRequestDto);
+
+    this.rechangeService.add(rechageDto);
     const reponse = { Status: 1, Value: 10000, Msg: 'xin chao' };
     const converted = JSON.stringify(reponse);
     return converted;

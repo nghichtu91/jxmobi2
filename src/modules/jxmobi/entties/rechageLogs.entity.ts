@@ -5,6 +5,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  BeforeInsert,
 } from 'typeorm';
 import { IBaseModel } from '@shared';
 import { IRechageLogs } from '@Modules/jxmobi/dtos';
@@ -74,7 +75,7 @@ export class RechageLogsEntity
   Pram_2: string;
   @Column({
     type: 'int',
-    name: 'Pram_2',
+    name: 'Pram_3',
     nullable: true,
   })
   Pram_3: number;
@@ -115,4 +116,17 @@ export class RechageLogsEntity
     type: 'datetime',
   })
   RechageDate: Date;
+
+  @Column({
+    type: 'nvarchar',
+    name: 'UserName',
+    nullable: true,
+  })
+  UserName: string;
+
+  @BeforeInsert()
+  beforeInser() {
+    this.TransID = `jxm_${new Date().getTime().toString()}`;
+    this.Status = 1;
+  }
 }

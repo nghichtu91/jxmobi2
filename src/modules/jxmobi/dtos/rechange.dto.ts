@@ -1,10 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export interface IRechangeRequest {
-  Value: number;
-  Msg?: string;
-}
-
 interface IRechangeReponse {
   Status: number;
   Value: number;

@@ -14,6 +14,7 @@ import {
 
 import { UserEntity } from '@modules/user/entities';
 import { KTCoinEntity } from '@modules/jxmobi/entties/ktcoin.entity';
+import { RechageLogsEntity } from '@modules/jxmobi/entties/rechageLogs.entity';
 
 export default {
   type: databaseType,
@@ -29,7 +30,7 @@ export default {
   cache: databaseEnableCache
     ? { duration: parseDuration(databaseCacheDuration) }
     : false,
-  entities: [UserEntity, KTCoinEntity],
+  entities: [UserEntity, KTCoinEntity, RechageLogsEntity],
   options: {
     encrypt: false,
   },

@@ -18,6 +18,9 @@ import { KTCoinUpdateDto } from '../dtos/ktcoinUpdate.dto';
 import { RechangeService } from '../services/rechange.service';
 import { IRechangeRequest } from '../dtos/rẹchageRequest.dto';
 import { RechangeCreateDto } from '../dtos/rechangeCreate.dto';
+import { TranlogsService } from '../services/tranlogs.service';
+import { TranlogsCreateDto } from '../dtos/tranlogCreate.dto';
+import { KTCoinReponse } from '../dtos/ktcoinReponse.dto';
 
 @ApiTags('jxmobi')
 @Controller('jxmobi')
@@ -26,6 +29,7 @@ export class JxmobiController {
   constructor(
     private readonly ktCoinService: KTCoinService,
     private readonly rechangeService: RechangeService,
+    private readonly tranLogService: TranlogsService,
   ) {}
 
   @Get('rechage')
@@ -38,6 +42,7 @@ export class JxmobiController {
     reponse.Status = 1;
     return reponse;
   }
+
   @Post('rechage')
   @ApiQuery({
     name: 'playdata',
@@ -49,13 +54,13 @@ export class JxmobiController {
     type: String,
     description: 'Trả về thông tin số kcoin hiện có',
   })
-  rechagePost(
+  async rechagePost(
     @Query('playdata')
     rechageRequest: string,
   ) {
     if (!rechageRequest) {
       rechageRequest = JSON.stringify({
-        Value: 10000,
+        Value: 100,
         Type: 2,
         UserID: 111,
         RoleID: 3434,
@@ -67,13 +72,55 @@ export class JxmobiController {
     const rechageRequestDto = JSON.parse(
       rechageRequest,
     ) as unknown as IRechangeRequest;
+    const ktCoinReponse = new KTCoinReponse();
 
-    const rechageDto = new RechangeCreateDto(rechageRequestDto);
+    try {
+      const ktcoinEntity = await this.ktCoinService.findOne(
+        rechageRequestDto.UserID,
+      );
+      const checkKTCoin = await this.ktCoinService.available(
+        rechageRequestDto.UserID,
+        rechageRequestDto.Value,
+      );
 
-    this.rechangeService.add(rechageDto);
-    const reponse = { Status: 1, Value: 10000, Msg: 'xin chao' };
-    const converted = JSON.stringify(reponse);
-    return converted;
+      ktCoinReponse.Value = ktcoinEntity?.KCoin || 0;
+
+      if (checkKTCoin) {
+        ktCoinReponse.Status = 1;
+        ktCoinReponse.Msg = 'Tài khoản có đủ ktcoin';
+      }
+
+      const converted = JSON.stringify(ktCoinReponse);
+      if (!checkKTCoin) {
+        return converted;
+      }
+
+      if (rechageRequestDto.Type == 2) {
+        this.logger.log(
+          `Xử lý mua knb từ trong game, id nhân vật: ${rechageRequestDto.RoleID},  nhân vật: ${rechageRequestDto.RoleName} , ktcoin: ${rechageRequestDto.Value}`,
+        );
+
+        //cập nhật ktcoin
+        const updateKtCoin = new KTCoinUpdateDto();
+        updateKtCoin.NewKCoin = -rechageRequestDto.Value;
+        updateKtCoin.UserID = rechageRequestDto.UserID;
+        await this.ktCoinService.updateKCoin(updateKtCoin);
+
+        // tạo yêu lệnh mua knb
+        const rechageDto = new RechangeCreateDto(rechageRequestDto);
+        await this.rechangeService.add(rechageDto);
+        // thêm logs nhân vật mua knb
+        const tranlogCreateDto = new TranlogsCreateDto(rechageRequestDto);
+        this.tranLogService.add(tranlogCreateDto);
+      }
+
+      return converted;
+    } catch (ex: unknown) {
+      throw new HttpException(
+        'Có lỗi từ hệ thống.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
   }
 
   @Post('ktcoin')
@@ -111,7 +158,7 @@ export class JxmobiController {
     try {
       await this.ktCoinService.updateKCoin(ktcoinUpdate);
       this.logger.log(
-        `Tài khoản ${ktcoinUpdate.UserName} cập nhật ${ktcoinUpdate.NewKCoin} ktcoin.`,
+        `Tài khoản ${ktcoinUpdate.UserID} cập nhật ${ktcoinUpdate.NewKCoin} ktcoin.`,
       );
       return new HttpException('Cập nhật kcoin thành công.', HttpStatus.OK);
     } catch (ex: unknown) {

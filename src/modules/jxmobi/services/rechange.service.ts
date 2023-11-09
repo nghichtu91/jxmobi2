@@ -1,12 +1,14 @@
-interface IRechangeService {
-  add(createDto: IRechangeCreateDto): void;
-}
-
 import { Repository } from 'typeorm';
 import { RechageLogsEntity } from '../entties/rechageLogs.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IRechangeCreateDto } from '../dtos/rechangeCreate.dto';
+import { Injectable } from '@nestjs/common';
 
+interface IRechangeService {
+  add(createDto: IRechangeCreateDto): void;
+}
+
+@Injectable()
 export class RechangeService implements IRechangeService {
   constructor(
     @InjectRepository(RechageLogsEntity)

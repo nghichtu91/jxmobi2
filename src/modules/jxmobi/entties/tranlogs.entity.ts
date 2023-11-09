@@ -10,7 +10,10 @@ import {
 import { ITranlogs } from '../dtos/tranLogs.model';
 
 @Entity({ name: 'LogsTrans' })
-export class TranLogs extends BaseEntity implements IBaseModel<ITranlogs> {
+export class TranLogsEntity
+  extends BaseEntity
+  implements IBaseModel<ITranlogs>
+{
   @PrimaryGeneratedColumn('increment')
   @PrimaryColumn()
   ID: number;

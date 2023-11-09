@@ -58,17 +58,6 @@ export class JxmobiController {
     @Query('playdata')
     rechageRequest: string,
   ) {
-    if (!rechageRequest) {
-      rechageRequest = JSON.stringify({
-        Value: 100,
-        Type: 2,
-        UserID: 5,
-        RoleID: 3434,
-        RoleName: '232323',
-        SeverID: 1,
-      });
-    }
-
     const rechageRequestDto = JSON.parse(
       rechageRequest,
     ) as unknown as IRechangeRequest;

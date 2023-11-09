@@ -49,7 +49,6 @@ export class UserService implements IUserService {
 
   getUser(userName: string): Promise<UserEntity> {
     return this.userRepository.findOne({
-
       where: {
         LoginName: userName,
       },

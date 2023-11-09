@@ -30,20 +30,20 @@ export function configSession(app: NestExpressApplication) {
   //   Logger.log(`Connected to redis successfully`, 'Bootstrap');
   // });
 
-  // app.use(
-  //   session({
-  //     store: new RedisStore({ client: redisClient }),
-  //     resave: false,
-  //     saveUninitialized: false,
-  //     secret: sessionSecret,
-  //     cookie: {
-  //       secure: false, // if true only transmit cookie over https
-  //       httpOnly: false, // if true prevent client side JS from reading the cookie
-  //       maxAge: parseDuration(sessionMaxAge, 'ms'), // session max age in milliseconds. Please restart Redis server after change this value!
-  //     },
-  //   }),
-  // );
-  // app.use(passport.initialize());
-  // app.use(passport.session());
+  app.use(
+    session({
+      // store: new RedisStore({ client: redisClient }),
+      resave: false,
+      saveUninitialized: false,
+      secret: sessionSecret,
+      cookie: {
+        secure: false, // if true only transmit cookie over https
+        httpOnly: false, // if true prevent client side JS from reading the cookie
+        maxAge: parseDuration(sessionMaxAge, 'ms'), // session max age in milliseconds. Please restart Redis server after change this value!
+      },
+    }),
+  );
+  app.use(passport.initialize());
+  app.use(passport.session());
   app.use(flash());
 }

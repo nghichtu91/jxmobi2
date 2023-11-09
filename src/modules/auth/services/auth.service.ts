@@ -1,10 +1,6 @@
 import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import {
-  CreateUserDTO,
-  IUpdateUserDTO,
-  UpdateUserDTO,
-} from '@modules/user/dtos';
+import { CreateUserDTO, UpdateUserDTO } from '@modules/user/dtos';
 import { UserEntity } from '@modules/user/entities';
 import { IReqUser } from '@shared';
 import { UserService } from '@user/services';
@@ -26,10 +22,9 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, password: string): Promise<UserEntity> {
-    const users = await this.userService.findByUserName(username);
-    const user = users[0];
-    if (!!user && user.comparePassword(password)) {
-      return user;
+    const userEntity = await this.userService.findByUserName(username);
+    if (userEntity && userEntity.comparePassword(password)) {
+      return userEntity;
     }
     return null;
   }
@@ -57,15 +52,15 @@ export class AuthService {
     return this.getAuthToken(user);
   }
 
-  getAuthToken(user: Partial<UserEntity>) {
-    const subject = { id: user.id, username: user.userName };
+  getAuthToken({ ID, LoginName, Email }: Partial<UserEntity>) {
+    const subject = { id: ID, username: LoginName };
 
     const roles =
-      user.userName === ADMIN_USER ? [AppRoles.ADMIN] : [AppRoles.GUEST];
+      LoginName === ADMIN_USER ? [AppRoles.ADMIN] : [AppRoles.GUEST];
     const payload = {
-      id: user.id,
-      username: user.userName,
-      email: user.email,
+      id: ID,
+      username: LoginName,
+      email: Email,
       roles,
     };
 
@@ -79,42 +74,18 @@ export class AuthService {
     };
   }
 
-  async forgotPassword(data: ForgotPassworDTO): Promise<boolean> {
+  async forgotPassword({
+    LoginName,
+    newPassword,
+  }: ForgotPassworDTO): Promise<boolean> {
     try {
-      const users = await this.userService.findByUserName(data.userName);
-
-      if (users.length === 0) {
+      const users = await this.userService.findByUserName(LoginName);
+      if (!users) {
         throw new Error('USER_NOT_FOUND');
       }
-      const user = users[0];
-
-      const datacheck: IUpdateUserDTO = {
-        phone: data.phone,
-        answer: data.answer,
-        passWordSecond: data.passWord,
-        question: data.question,
-      };
-
-      if (user.checkPassWordSecond(datacheck)) {
-        throw new Error(`Mật khẩu cấp 2 không đúng.`);
-      }
-      if (user.checkPhone(datacheck)) {
-        throw new Error(`Số điện thoại không đúng.`);
-      }
-
-      if (user.checkQuestion(datacheck)) {
-        throw new Error(`Câu hỏi bí mật không đúng.`);
-      }
-
-      if (user.checkAnswer(datacheck)) {
-        throw new Error(`Câu trả lời không đúng.`);
-      }
-
-      const update: UpdateUserDTO = { passWord: data.passWord || '123456789' };
-      await this.userService.update(data.userName, update);
-      this.logger.log(
-        `Tài khoản ${data.userName} lấy lại mật khẩu thành công!`,
-      );
+      const update: UpdateUserDTO = { Password: newPassword || '123456789' };
+      await this.userService.update(LoginName, update);
+      this.logger.log(`Tài khoản ${LoginName} lấy lại mật khẩu thành công!`);
       return true;
     } catch (e: unknown) {
       const errors = e as Error;

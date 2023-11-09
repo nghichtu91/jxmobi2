@@ -2,196 +2,100 @@ import { createHash } from 'node:crypto';
 import {
   BaseEntity,
   Column,
-  CreateDateColumn,
   BeforeInsert,
   BeforeUpdate,
   PrimaryColumn,
   Entity,
   PrimaryGeneratedColumn,
+  JoinColumn,
+  OneToOne,
 } from 'typeorm';
-import { IUpdateUserDTO, IUserModel } from '../dtos';
+import { IUserModel } from '../dtos';
 import { IBaseModel } from '@shared';
-import { ForgotPassworDTO } from '@modules/auth/dtos';
+import { KTCoinEntity } from '@modules/jxmobi/entties/ktcoin.entity';
 
-@Entity({ name: 'Account_info' })
+@Entity({ name: 'LoginTables' })
 export class UserEntity extends BaseEntity implements IBaseModel<IUserModel> {
   @PrimaryGeneratedColumn('increment')
-  @PrimaryColumn({ name: 'iid', type: 'bigint' })
-  id: string;
+  @PrimaryColumn({ name: 'ID', type: 'int' })
+  ID: number;
 
   @Column({
     type: 'varchar',
-    name: 'cAccName',
+    name: 'LoginName',
   })
-  userName: string;
+  LoginName: string;
 
   @Column({
     type: 'varchar',
-    name: 'cEMail',
-    length: 250,
-    nullable: true,
+    name: 'Password',
   })
-  email: string;
+  Password: string;
 
   @Column({
     type: 'varchar',
-    name: 'cPhone',
-    length: 50,
-    nullable: true,
+    name: 'Phone',
   })
-  phone?: string;
+  Phone?: string;
 
   @Column({
-    name: 'cPassWord',
-    length: 32,
-    type: 'varchar',
+    type: 'int',
+    name: 'Status',
   })
-  passWord: string;
+  Status?: number;
+
+  @Column({
+    type: 'nvarchar',
+    name: 'FullName',
+  })
+  FullName?: string;
+
+  @Column({
+    type: 'varchar',
+    name: 'Email',
+  })
+  Email?: string;
+
+  @Column({
+    type: 'datetime',
+    name: 'TokenTimeExp',
+  })
+  TokenTimeExp?: Date;
+
+  @Column({
+    type: 'varchar',
+    name: 'AccessToken',
+  })
+  AccessToken?: string;
+
+  @Column({
+    type: 'varchar',
+    name: 'Note',
+  })
+  Note?: string;
+
+  @Column({
+    type: 'int',
+    name: 'LastServerLogin',
+  })
+  LastServerLogin?: number;
+
+  @Column({
+    type: 'datetime',
+    name: 'LastLoginTime',
+  })
+  LastLoginTime?: Date;
+
+  @OneToOne(() => KTCoinEntity)
+  @JoinColumn([{ name: 'ID', referencedColumnName: 'UserID' }])
+  KtCoin?: KTCoinEntity;
 
   @BeforeInsert()
   @BeforeUpdate()
   hashPassword(): void {
-    if (this.passWord) {
-      this.passwordNoEncrypt = this.passWord;
-      this.passWord = createHash('md5')
-        .update(this.passWord)
-        .digest('hex')
-        .toString()
-        .toLocaleUpperCase();
-    }
-  }
-
-  @Column({
-    name: 'cSecPassWord',
-    type: 'varchar',
-  })
-  passWordSecond: string;
-
-  @Column({ name: 'iClientID', type: 'bigint', insert: false })
-  iClientID?: number;
-
-  @CreateDateColumn({
-    name: 'dRegDate',
-    nullable: true,
-    type: 'datetime',
-  })
-  createdAt?: Date;
-
-  @Column({
-    name: 'cPasswordNoEncrypt',
-    length: 50,
-    type: 'varchar',
-  })
-  passwordNoEncrypt?: string;
-
-  @Column({
-    name: 'cSecPasswordNoEncrypt',
-    length: 50,
-    type: 'varchar',
-  })
-  secPasswordNoEncrypt?: string;
-
-  // point
-  @Column({
-    name: 'nExtPoint',
-    type: 'smallint',
-  })
-  point: number;
-
-  @Column({
-    type: 'smallint',
-    name: 'nExtPoint1',
-    default: 1,
-  })
-  point1: number;
-
-  @Column({
-    type: 'smallint',
-    name: 'nExtPoint2',
-    default: 0,
-  })
-  point2: number;
-
-  @Column({
-    type: 'smallint',
-    name: 'nExtPoint3',
-    default: 0,
-    select: false,
-  })
-  point3: number;
-
-  @Column({
-    type: 'smallint',
-    name: 'nExtPoint4',
-    default: 0,
-    select: false,
-  })
-  point4: number;
-
-  @Column({
-    type: 'smallint',
-    name: 'nExtPoint5',
-    default: 0,
-    select: false,
-  })
-  point5: number;
-
-  @Column({
-    type: 'smallint',
-    name: 'nExtPoint6',
-    default: 0,
-    select: false,
-  })
-  point6: number;
-
-  @Column({
-    type: 'smallint',
-    name: 'nExtPoint7',
-    default: 0,
-    select: false,
-  })
-  point7: number;
-
-  @Column({
-    type: 'varchar',
-    name: 'cQuestion',
-    default: 0,
-  })
-  question?: string;
-  @Column({
-    type: 'varchar',
-    name: 'cAnswer',
-    default: 0,
-  })
-  answer?: string;
-
-  @Column({
-    type: 'nchar',
-    name: 'cUpdateInfo',
-  })
-  updateInfo?: string;
-
-  @Column({ type: 'varchar', name: 'cIpAddress' })
-  ip?: string;
-
-  @BeforeInsert()
-  createTime(): void {
-    this.createdAt = new Date();
-  }
-
-  @BeforeUpdate()
-  beforeUpdateInfo(): void {
-    if (this.passWordSecond && this.question) {
-      this.updateInfo = '1';
-    }
-  }
-
-  @BeforeUpdate()
-  hashPasswordSecond(): void {
-    if (this.passWordSecond) {
-      this.secPasswordNoEncrypt = this.passWordSecond;
-      this.passWordSecond = createHash('md5')
-        .update(this.passWordSecond)
+    if (this.Password) {
+      this.Password = createHash('md5')
+        .update(this.Password)
         .digest('hex')
         .toString()
         .toLocaleUpperCase();
@@ -204,75 +108,7 @@ export class UserEntity extends BaseEntity implements IBaseModel<IUserModel> {
         .update(attempt)
         .digest('hex')
         .toString()
-        .toLocaleUpperCase() === this.passWord
+        .toLocaleUpperCase() === this.Password
     );
-  }
-
-  @BeforeInsert()
-  defaultValues(): void {
-    this.point = 1;
-    this.point1 = 0;
-    this.point2 = 0;
-    this.point3 = 0;
-    this.point4 = 0;
-    this.point5 = 0;
-    this.point6 = 0;
-    this.point7 = 0;
-  }
-
-  checkPhone(params: IUpdateUserDTO) {
-    return this.phone !== params.phone;
-  }
-
-  checkQuestion(params: IUpdateUserDTO) {
-    return this.question !== params.question;
-  }
-
-  checkAnswer(params: IUpdateUserDTO) {
-    return this.answer?.toLowerCase() !== params?.answer?.toLowerCase();
-  }
-
-  checkPassWordSecond(params: IUpdateUserDTO) {
-    return (
-      this.passWordSecond !==
-      createHash('md5')
-        .update(params.passWordSecond)
-        .digest('hex')
-        .toString()
-        .toLocaleUpperCase()
-    );
-  }
-
-  /**
-   * @param {IUpdateUserDTO} params
-   * @returns {boolean}
-   */
-  beforeChangeCheckInfo(params: IUpdateUserDTO): boolean {
-    return (
-      this.phone !== params.phone ||
-      this.question !== params.question ||
-      this.answer !== params.answer ||
-      this.passWordSecond !==
-        createHash('md5')
-          .update(params.passWordSecond)
-          .digest('hex')
-          .toString()
-          .toLocaleUpperCase()
-    );
-  }
-
-  beforCheckForgotPassword(params: ForgotPassworDTO) {
-    return (
-      this.phone !== params.phone ||
-      this.question !== params.question ||
-      this.answer !== this.answer
-    );
-  }
-
-  checkEmail(email?: string) {
-    if (!this.email || this.email === '0@gmail.com' || this.email === email) {
-      return true;
-    }
-    return false;
   }
 }

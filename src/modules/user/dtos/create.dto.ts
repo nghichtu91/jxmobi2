@@ -11,10 +11,7 @@ import { IsUserAlreadyExist } from '../validators/IsUserAlreadyExist';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Transform, TransformFnParams } from 'class-transformer';
 
-export type ICreateUserDTO = Omit<
-  IUserModel,
-  'createAt' | 'updateAt' | 'passWordSecond'
->;
+export type ICreateUserDTO = Omit<IUserModel, 'ID'>;
 
 export enum UserRole {
   Admin = 'Admin',
@@ -35,7 +32,7 @@ export class CreateUserDTO implements ICreateUserDTO {
   })
   @Transform(({ value }) => value.toLowerCase())
   @Transform(({ value }: TransformFnParams) => value?.trim())
-  userName: string;
+  LoginName: string;
 
   @IsNotEmpty()
   @IsString()
@@ -43,26 +40,15 @@ export class CreateUserDTO implements ICreateUserDTO {
   @MaxLength(32)
   @ApiProperty({ description: 'Mật khẩu vào game' })
   @Transform(({ value }: TransformFnParams) => value?.trim())
-  passWord: string;
+  Password: string;
 
   @IsOptional()
   @ApiProperty({ required: false })
   @Transform(({ value }: TransformFnParams) => value?.trim())
-  email?: string;
+  Email?: string;
 
   @IsOptional()
   @ApiProperty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
-  phone?: string;
-
-  @IsOptional()
-  @ApiProperty()
-  question?: string;
-
-  @IsOptional()
-  @ApiProperty()
-  answer?: string;
-
-  @ApiHideProperty()
-  ip?: string;
+  Phone?: string;
 }

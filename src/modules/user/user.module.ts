@@ -3,9 +3,8 @@ import { Module } from '@nestjs/common';
 import { UserEntity } from './entities';
 import { UserService } from './services';
 import { UserController, AdminController } from './controllers';
-import { UserSubscriber } from './subscribers';
+// import { UserSubscriber } from './subscribers';
 import { IsUserAlreadyExistConstraint } from './validators/IsUserAlreadyExist';
-import { UserPlayTimeModule } from './playtime.module';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 
@@ -19,10 +18,9 @@ import * as winston from 'winston';
       ],
     }),
     TypeOrmModule.forFeature([UserEntity]),
-    UserPlayTimeModule,
   ],
-  providers: [IsUserAlreadyExistConstraint, UserService, UserSubscriber],
-  controllers: [UserController, AdminController],
+  providers: [IsUserAlreadyExistConstraint, UserService],
+  controllers: [UserController],
   exports: [UserService],
 })
 export class UsersModule {}

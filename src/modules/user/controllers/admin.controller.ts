@@ -168,39 +168,6 @@ export class AdminController {
           HttpStatus.NOT_FOUND,
         );
       }
-      switch (action) {
-        case 'addxu':
-          await this.userService.addMoney(username, body.point);
-          this.adminLog(
-            userCurrent.username,
-            `thêm vào tài khoản ${username} ${body.point} xu.`,
-          );
-          break;
-        case 'unlockOrLock':
-          const update: UpdateUserDTO = { point: body.point };
-          await this.userService.update(username, update);
-          this.adminLog(
-            userCurrent.username,
-            `${
-              body.point === 1
-                ? `mở khoá tài khoản ${username}`
-                : `khoá tài khoản ${username}`
-            }.`,
-          );
-          break;
-        case 'resetaccount':
-          const resetUpdate: UpdateUserDTO = {
-            updateInfo: '0',
-            phone: '',
-            question: '',
-            answer: '',
-            email: '',
-          };
-          await this.userService.update(username, resetUpdate);
-          break;
-        default:
-          break;
-      }
     } catch (e: unknown) {
       const error = e as Error;
       this.logger.error(error.message);

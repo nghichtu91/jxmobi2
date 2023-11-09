@@ -6,39 +6,35 @@ import { IsOptional } from 'class-validator';
 
 export type IForgotPassWordDTO = Pick<
   IUserModel,
-  'phone' | 'answer' | 'question' | 'userName' | 'passWord'
->;
+  'Phone' | 'LoginName' | 'Password'
+> & {
+  newPassword?: string;
+};
 
 export class ForgotPassworDTO implements IForgotPassWordDTO {
   @IsOptional()
+  @ApiProperty({
+    required: false,
+  })
+  @Transform(({ value }: TransformFnParams) => value?.trim())
+  Phone?: string;
+
+  @IsOptional()
+  @ApiProperty({
+    required: false,
+  })
+  @Transform(({ value }: TransformFnParams) => value?.trim())
+  Password: string;
+
+  @IsOptional()
   @ApiProperty()
   @Transform(({ value }: TransformFnParams) => value?.trim())
-  passWord?: string;
+  newPassword?: string;
 
   @IsOptional()
   @ApiProperty({
     required: false,
   })
   @Transform(({ value }: TransformFnParams) => value?.trim())
-  phone?: string;
-
-  @IsOptional()
-  @ApiProperty({
-    required: false,
-  })
-  @Transform(({ value }: TransformFnParams) => value?.trim())
-  answer?: string;
-
-  @IsOptional()
-  @ApiProperty({
-    required: false,
-  })
-  @Transform(({ value }: TransformFnParams) => value?.trim())
-  userName?: string;
-
-  @IsOptional()
-  @ApiProperty({
-    required: false,
-  })
-  question?: string;
+  LoginName: string;
 }

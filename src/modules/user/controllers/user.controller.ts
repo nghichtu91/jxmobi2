@@ -27,6 +27,7 @@ import { Response } from 'express';
 import { ADMIN_USER, AppResources, AppRoles, ATM_LINK } from '@config';
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { HttpStatusCode } from 'axios';
+import { IUserReponseDto, UserReponseDto } from '../dtos/userReponse.dto';
 
 @Controller('user')
 @ApiTags('User')
@@ -43,7 +44,7 @@ export class UserController {
   @ApiOperation({ summary: 'Lấy thông tin tài khoản' })
   @ApiOkResponse({
     description: 'Lấy thành công thông tin tài khoản.',
-    type: UserModel,
+    type: UserReponseDto,
   })
   @ApiForbiddenResponse({
     description: 'Không có quyền truy cập.',
@@ -51,7 +52,7 @@ export class UserController {
   @ApiNotFoundResponse({
     description: 'Không tìm thấy tài khoản này.',
   })
-  async getUserById(@User() currentUser: ReqUser): Promise<IUserModel> {
+  async getUserById(@User() currentUser: ReqUser): Promise<IUserReponseDto> {
     const permission = new AppPermissionBuilder()
       .setRolesBuilder(this.rolesBuilder)
       .setRequestUser(currentUser)
@@ -64,19 +65,10 @@ export class UserController {
       throw new HttpException(``, HttpStatusCode.Forbidden);
     }
     const userEntity = await this.userService.getUser(currentUser.username);
-    const phone = userEntity?.phone;
-    const email =
-      userEntity?.email === '0@gmail.com' ? undefined : userEntity?.email;
-    const reponse: IUserModel = {
-      ...userEntity,
-      roles:
-        userEntity.userName === ADMIN_USER
-          ? [AppRoles.ADMIN]
-          : [AppRoles.GUEST],
-      phone: phone ? `******${phone.substring(phone.length - 3)}` : null,
-      email: email ? `***${email.substring(email.length - 3)}` : null,
-    };
-    return permission.filter(reponse);
+    const { userName, fullName, phone, roles, id, ktcoin } = new UserReponseDto(
+      userEntity,
+    );
+    return permission.filter({ userName, fullName, phone, roles, id, ktcoin });
   }
 
   @JwtAuth()
@@ -375,14 +367,6 @@ export class UserController {
     }
 
     const findingUser = await this.userService.findByUserName(username);
-    if (findingUser && findingUser.length === 0) {
-      throw new HttpException(
-        `Không tìm thấy tài khoản ${username}`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    let updateParams: UpdateUserDTO = {};
 
     if (findingUser[0].checkPassWordSecond(data) && action !== 'firstupdate') {
       throw new HttpException(
@@ -412,63 +396,7 @@ export class UserController {
       );
     }
 
-    switch (action) {
-      case 'changepassword':
-        updateParams = {
-          passWord: data.passWord,
-        };
-        break;
-      case 'changephone':
-        updateParams = {
-          phone: data.newPhone,
-        };
-        break;
-      case 'changesecpassword':
-        updateParams = {
-          passWordSecond: data.newPassWordSecond,
-        };
-        break;
-      case 'changesecretquestion':
-        updateParams = {
-          question: data.newSecretQuestion,
-          answer: data.newAnswer,
-        };
-        break;
-      case 'firstupdate':
-        if (
-          findingUser[0].updateInfo &&
-          findingUser[0].updateInfo.trim() === '1'
-        ) {
-          throw new HttpException(
-            `Thông tin đã được cập nhật.`,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-        if (!findingUser[0].checkEmail(data.email)) {
-          throw new HttpException(
-            `Email cung cấp không đúng, vui lòng kiểm tra lại!`,
-            HttpStatus.BAD_REQUEST,
-          );
-        }
-        updateParams = {
-          question: data.question,
-          answer: data.answer,
-          passWordSecond: data.passWordSecond,
-        };
-        if (!findingUser[0].phone) {
-          updateParams.phone = data.phone;
-        }
-        break;
-      case 'unlockequipment':
-        updateParams = {
-          point2: 1,
-        };
-        break;
-      default:
-        this.logger.warn(`${action} không hỗ trợ`);
-        throw new HttpException(``, HttpStatus.NOT_MODIFIED);
-    }
-
+    const updateParams = {};
     try {
       await this.userService.update(username, updateParams);
       this.logger.log(

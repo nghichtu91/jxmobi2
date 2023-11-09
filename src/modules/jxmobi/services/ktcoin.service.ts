@@ -8,7 +8,7 @@ import { IKTCoinCreate } from '../dtos/ktcoinCreate.dto';
 interface IKtcoinService {
   add(createDto: IKTCoinCreate): Promise<KTCoinEntity>;
   updateKCoin(updateDto: IKTCoinUpdate): Promise<UpdateResult>;
-  exist(UserName?: string): Promise<boolean>;
+  exist(UserID: number): Promise<boolean>;
   available(UserID: number, coinNeed: number): Promise<boolean>;
   findOne(UserID: number): Promise<KTCoinEntity>;
 }
@@ -38,10 +38,10 @@ export class KTCoinService implements IKtcoinService {
     return !!result;
   }
 
-  exist(UserName?: string): Promise<boolean> {
+  exist(UserID: number): Promise<boolean> {
     return this.ktcoinReporitory.exist({
       where: {
-        UserName: UserName,
+        UserID: UserID,
       },
     });
   }

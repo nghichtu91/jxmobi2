@@ -13,7 +13,6 @@ import { roles } from '@config';
 import ormconfig from '@config/databases/ormconfig';
 import { AppController } from '@modules/app/controllers/app.controller';
 import { AppService } from '@modules/app/services';
-import { SmsModule } from '@modules/sms/sms.module';
 import { JxMobiModule } from '@modules/jxmobi/jxmobi.module';
 
 @Module({
@@ -23,9 +22,9 @@ import { JxMobiModule } from '@modules/jxmobi/jxmobi.module';
       limit: 10,
     }),
     TypeOrmModule.forRoot(ormconfig),
-    // PassportModule,
-    // AccessControlModule.forRoles(roles),
-    //AuthModule,
+    PassportModule,
+    AccessControlModule.forRoles(roles),
+    AuthModule,
     //PaymentModule,
     //UsersModule,
     //SmsModule,

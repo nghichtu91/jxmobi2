@@ -17,7 +17,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
     /* eslint-disable @typescript-eslint/no-unused-vars */
-    const { id, userName, ..._ } = user; // ignore other fields in session stored
-    return { id, userName };
+    const { ID, LoginName, ..._ } = user; // ignore other fields in session stored
+    return { ID, LoginName };
   }
 }

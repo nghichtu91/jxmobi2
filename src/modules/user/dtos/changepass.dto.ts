@@ -2,7 +2,7 @@ import { IsString, IsNotEmpty, MinLength, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IUserModel } from './user.model';
 
-export type IChangePassWordDTO = Pick<IUserModel, 'passWord'> & {
+export type IChangePassWordDTO = Pick<IUserModel, 'Password'> & {
   currentPassWord: string;
 };
 
@@ -12,7 +12,7 @@ export class ChangePassWordDTO implements IChangePassWordDTO {
   @MinLength(8)
   @MaxLength(32)
   @ApiProperty({ description: 'Mật khẩu mới.' })
-  passWord: string;
+  Password: string;
 
   @IsNotEmpty()
   @IsString()

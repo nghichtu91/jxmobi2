@@ -8,15 +8,11 @@ import {
 } from 'typeorm';
 
 import { UserEntity } from '../entities/user.entity';
-import { UserPlaytimeService } from '../services/playtime.service';
 
 @EventSubscriber()
 export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
   private readonly logger: Logger = new Logger(UserSubscriber.name);
-  constructor(
-    dataSource: DataSource,
-    private userPlayTimeService: UserPlaytimeService,
-  ) {
+  constructor(dataSource: DataSource) {
     dataSource.subscribers.push(this);
   }
   listenTo(): typeof UserEntity {
@@ -29,6 +25,6 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
 
   afterInsert(event: InsertEvent<UserEntity>): void {
     this.logger.log(`AFTER USER INSERTED ${JSON.stringify(event.entity)}`);
-    this.userPlayTimeService.addEndTime(event.entity.userName);
+    // this.userPlayTimeService.addEndTime(event.entity.userName);
   }
 }

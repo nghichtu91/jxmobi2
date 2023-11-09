@@ -62,7 +62,7 @@ export class JxmobiController {
       rechageRequest = JSON.stringify({
         Value: 100,
         Type: 2,
-        UserID: 111,
+        UserID: 5,
         RoleID: 3434,
         RoleName: '232323',
         SeverID: 1,
@@ -95,6 +95,7 @@ export class JxmobiController {
         return converted;
       }
 
+      //#region  xử lý tạo nhân vật mua knb
       if (rechageRequestDto.Type == 2) {
         this.logger.log(
           `Xử lý mua knb từ trong game, id nhân vật: ${rechageRequestDto.RoleID},  nhân vật: ${rechageRequestDto.RoleName} , ktcoin: ${rechageRequestDto.Value}`,
@@ -113,6 +114,7 @@ export class JxmobiController {
         const tranlogCreateDto = new TranlogsCreateDto(rechageRequestDto);
         this.tranLogService.add(tranlogCreateDto);
       }
+      //#endregion
 
       return converted;
     } catch (ex: unknown) {
@@ -129,7 +131,7 @@ export class JxmobiController {
   })
   async ktcoinPost(@Body() ktcoinCreate: KTCoinCreateDto) {
     try {
-      const isExist = await this.ktCoinService.exist(ktcoinCreate.UserName);
+      const isExist = await this.ktCoinService.exist(ktcoinCreate.UserID);
       if (isExist) {
         return new HttpException(
           'Tài khoản đã có trong bảng ktcoin',

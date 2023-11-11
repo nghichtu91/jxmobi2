@@ -95,13 +95,12 @@ export class JxmobiController {
         updateKtCoin.NewKCoin = -rechageRequestDto.Value;
         updateKtCoin.UserID = rechageRequestDto.UserID;
         await this.ktCoinService.updateKCoin(updateKtCoin);
-
         // tạo yêu lệnh mua knb
-        const rechageDto = new RechangeCreateDto(rechageRequestDto);
-        await this.rechangeService.add(rechageDto);
-        // thêm logs nhân vật mua knb
-        const tranlogCreateDto = new TranlogsCreateDto(rechageRequestDto);
-        this.tranLogService.add(tranlogCreateDto);
+        // const rechageDto = new RechangeCreateDto(rechageRequestDto);
+        // await this.rechangeService.add(rechageDto);
+        // // thêm logs nhân vật mua knb
+        // const tranlogCreateDto = new TranlogsCreateDto(rechageRequestDto);
+        // this.tranLogService.add(tranlogCreateDto);
       }
       //#endregion
 

@@ -42,8 +42,16 @@ export class UserService implements IUserService {
     return userNameNumber === 0;
   }
 
-  async create(userCreateDto: CreateUserDTO): Promise<UserEntity> {
-    const userEntity = this.userRepository.create(userCreateDto);
+  async create({
+    userName,
+    passWord,
+    phone,
+  }: CreateUserDTO): Promise<UserEntity> {
+    const userEntity = this.userRepository.create({
+      LoginName: userName,
+      Password: passWord,
+      Phone: phone,
+    });
     return this.userRepository.save(userEntity);
   }
 
@@ -80,14 +88,16 @@ export class UserService implements IUserService {
    */
   async changePassword(
     userName: string,
-    data: ChangePassWordDTO,
+    { newPassWord }: ChangePassWordDTO,
   ): Promise<UpdateResult> {
-    const passwordMd5 = createHash('md5').update(data.Password).digest('hex');
+    const updateEntity = this.userRepository.create({
+      Password: newPassWord,
+    });
     const updatePassword = this.userRepository.update(
       {
         LoginName: userName,
       },
-      { Password: passwordMd5 },
+      updateEntity,
     );
     return updatePassword;
   }

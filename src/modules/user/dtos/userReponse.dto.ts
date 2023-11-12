@@ -9,6 +9,7 @@ export interface IUserReponseDto {
   fullName?: string;
   roles?: string[];
   ktcoin: number;
+  isNew: boolean;
 }
 
 export class UserReponseDto implements IUserReponseDto {
@@ -24,6 +25,7 @@ export class UserReponseDto implements IUserReponseDto {
   private readonly _roles?: string[];
 
   private readonly _ktcoin: number;
+  private readonly _isNew: boolean;
 
   constructor({ ID, FullName, LoginName, KtCoin }: IUserModel) {
     this._id = ID;
@@ -31,6 +33,8 @@ export class UserReponseDto implements IUserReponseDto {
     this._roles = ADMIN_USER == LoginName ? [AppRoles.ADMIN] : [AppRoles.GUEST];
     this._userName = LoginName;
     this._ktcoin = KtCoin?.KCoin || 0;
+    this._isNew = false;
+
   }
   @ApiProperty()
   get id(): number {
@@ -55,5 +59,8 @@ export class UserReponseDto implements IUserReponseDto {
 
   get ktcoin(): number {
     return this._ktcoin;
+  }
+  get isNew() {
+    return this._isNew;
   }
 }

@@ -22,9 +22,9 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { UpdateUserDTO, IUserModel, UserModel } from '../dtos';
+import { ChangePassWordDTO } from '../dtos';
 import { Response } from 'express';
-import { ADMIN_USER, AppResources, AppRoles, ATM_LINK } from '@config';
+import { AppResources } from '@config';
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { HttpStatusCode } from 'axios';
 import { IUserReponseDto, UserReponseDto } from '../dtos/userReponse.dto';
@@ -65,10 +65,17 @@ export class UserController {
       throw new HttpException(``, HttpStatusCode.Forbidden);
     }
     const userEntity = await this.userService.getUser(currentUser.username);
-    const { userName, fullName, phone, roles, id, ktcoin } = new UserReponseDto(
-      userEntity,
-    );
-    return permission.filter({ userName, fullName, phone, roles, id, ktcoin });
+    const { userName, fullName, phone, roles, id, ktcoin, isNew } =
+      new UserReponseDto(userEntity);
+    return permission.filter({
+      userName,
+      fullName,
+      phone,
+      roles,
+      id,
+      ktcoin,
+      isNew,
+    });
   }
 
   @JwtAuth()
@@ -104,41 +111,9 @@ export class UserController {
             code: 'user-change-password',
             label: {
               zh_CN: 'Nạp thẻ',
-              en_US: 'Đổi mật khẩu game',
+              en_US: 'Đổi mật khẩu',
             },
             path: '/user/change-password',
-          },
-          {
-            code: 'user-change-phone',
-            label: {
-              zh_CN: 'Nạp thẻ',
-              en_US: 'Đổi số điện thoại',
-            },
-            path: '/user/change-phone',
-          },
-          {
-            code: 'user-change-sec-password',
-            label: {
-              zh_CN: 'Nạp thẻ',
-              en_US: 'Đổi mật khẩu cấp 2',
-            },
-            path: '/user/change-sec-password',
-          },
-          {
-            code: 'user-change-secret-questions',
-            label: {
-              zh_CN: 'Nạp thẻ',
-              en_US: 'Đổi câu hỏi bí mật',
-            },
-            path: '/user/change-secret-questions',
-          },
-          {
-            code: 'user-unlock-equipment',
-            label: {
-              zh_CN: 'Nạp thẻ',
-              en_US: 'Mở khoá trang bị',
-            },
-            path: '/user/unlock-equipment',
           },
         ],
       },
@@ -160,19 +135,10 @@ export class UserController {
             path: '/payment',
           },
           {
-            path: 'payment-atm',
-            code: 'payment-atm',
-            label: {
-              zh_CN: 'Nạp thẻ ATM(triết khấu)',
-              en_US: 'Nạp thẻ ATM(triết khấu)',
-            },
-            href: ATM_LINK,
-          },
-          {
             code: 'payment-histories',
             label: {
-              zh_CN: 'Lịch sử nạp',
-              en_US: 'Lịch sử nạp',
+              zh_CN: 'Lịch sử nạp thẻ',
+              en_US: 'Lịch sử nạp thẻ',
             },
             path: '/payment/histories',
           },
@@ -341,9 +307,10 @@ export class UserController {
       ],
     };
   }
+
   @JwtAuth()
-  @Patch(':id/:action')
-  @ApiOperation({ summary: 'Cập nhật thông tin' })
+  @Patch(':id/changepassword')
+  @ApiOperation({ summary: 'Đổi mật khẩu tài khoản.' })
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiBadRequestResponse({
     description: 'Có lỗi trong quá trình cập nhật!',
@@ -353,11 +320,9 @@ export class UserController {
   })
   @ApiOkResponse({ description: 'Cập nhật thành công.' })
   @ApiParam({ name: 'id', description: 'sử dụng tài khoản' })
-  @ApiParam({ name: 'action', description: 'Hành động cần thực hiện' })
-  async updateUser(
+  async changePassWordUser(
     @Param('id') username: string,
-    @Param('action') action: string,
-    @Body() data: UpdateUserDTO,
+    @Body() changePassworDto: ChangePassWordDTO,
     @User() currentUser: ReqUser,
     @Res() res: Response,
   ) {
@@ -365,42 +330,15 @@ export class UserController {
     if (username !== currentUser.username) {
       throw new HttpException(``, HttpStatus.NOT_MODIFIED);
     }
-
-    const findingUser = await this.userService.findByUserName(username);
-
-    if (findingUser[0].checkPassWordSecond(data) && action !== 'firstupdate') {
-      throw new HttpException(
-        `Mật khẩu cấp 2 không đúng.`,
-        HttpStatus.BAD_REQUEST,
-      );
+    const checkUser = await this.userService.findByUserName(username);
+    if (!checkUser) {
+      throw new HttpException(``, HttpStatus.NOT_FOUND);
     }
 
-    if (findingUser[0].checkPhone(data) && action !== 'firstupdate') {
-      throw new HttpException(
-        `Số điện thoại không đúng.`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    if (findingUser[0].checkQuestion(data) && action !== 'firstupdate') {
-      throw new HttpException(
-        `Câu hỏi bí mật không đúng.`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    if (findingUser[0].checkAnswer(data) && action !== 'firstupdate') {
-      throw new HttpException(
-        `Câu trả lời không đúng.`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const updateParams = {};
     try {
-      await this.userService.update(username, updateParams);
+      await this.userService.changePassword(username, changePassworDto);
       this.logger.log(
-        `[${action}] tài khoản ${username} đổi thông tin thành công!`,
+        `[Changepassword tài khoản ${username} đổi thông tin thành công!`,
       );
       res.status(HttpStatus.OK).json({
         message: 'Cập nhật thông tin thành công!',
@@ -408,9 +346,6 @@ export class UserController {
     } catch (e) {
       const error = e as unknown as Error;
       this.logger.error(error.message);
-      this.logger.error(
-        `[${action}] tài khoản ${username} đổi thông tin không thành công!`,
-      );
       throw new HttpException(
         `Có lỗi trong quá trình cập nhật, vui lòng thử lại sau.`,
         HttpStatus.SERVICE_UNAVAILABLE,

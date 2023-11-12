@@ -32,7 +32,7 @@ export class AdminController {
 
   constructor(
     private readonly userService: UserService,
-    private readonly paymentService: PaymentService,
+    // private readonly paymentService: PaymentService,
     @InjectRolesBuilder()
     private readonly rolesBuilder: RolesBuilder,
   ) {}
@@ -116,17 +116,17 @@ export class AdminController {
       throw new HttpException(`Không có quyền truy cập`, HttpStatus.FORBIDDEN);
     }
     switch (action) {
-      case 'paymentbyyear':
-        return this.paymentService.staticByYear(year);
-      case 'paymentformto':
-        return this.paymentService.staticByFormTo(form, to);
-      case 'totals':
-        return {
-          accounts: await this.userService.getCount(''),
-          payments: await this.paymentService.count(),
-          money: await this.paymentService.sumMomey(),
-          moneyToday: await this.paymentService.sumMoneyToday(),
-        };
+      // case 'paymentbyyear':
+      //   return this.paymentService.staticByYear(year);
+      // case 'paymentformto':
+      //   return this.paymentService.staticByFormTo(form, to);
+      // case 'totals':
+      //   return {
+      //     accounts: await this.userService.getCount(''),
+      //     payments: await this.paymentService.count(),
+      //     money: await this.paymentService.sumMomey(),
+      //     moneyToday: await this.paymentService.sumMoneyToday(),
+      //   };
       default:
         throw new HttpException(``, HttpStatus.NOT_FOUND);
     }

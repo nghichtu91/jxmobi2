@@ -12,15 +12,15 @@ import { BOT_KEY } from '@config';
 @Global()
 @Module({
   imports: [
-    TelegramModule.forRoot({
-      botKey: BOT_KEY,
-    }),
-    TypeOrmModule.forFeature([PaymentEntity]),
-    HttpModule,
-    UsersModule,
+    // TelegramModule.forRoot({
+    //   botKey: BOT_KEY,
+    // }),
+    // TypeOrmModule.forFeature([]),
+    // HttpModule,
+    // UsersModule,
   ],
   providers: [],
   controllers: [],
-  exports: [PaymentService],
+  exports: [],
 })
 export class PaymentModule {}

@@ -8,10 +8,14 @@ import {
   Matches,
 } from 'class-validator';
 import { IsUserAlreadyExist } from '../validators/IsUserAlreadyExist';
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Transform, TransformFnParams } from 'class-transformer';
 
-export type ICreateUserDTO = Omit<IUserModel, 'ID'>;
+export type ICreateUserDTO = {
+  userName: string;
+  phone?: string;
+  passWord: string;
+};
 
 export enum UserRole {
   Admin = 'Admin',
@@ -23,7 +27,7 @@ export class CreateUserDTO implements ICreateUserDTO {
   @IsNotEmpty()
   @IsString()
   @MaxLength(16)
-  @ApiProperty({ description: 'Tài khoản đăng nhập vào game' })
+  @ApiProperty({ description: 'Tài khoản đăng nhập' })
   @IsUserAlreadyExist({
     message: 'Tài khoản $value đã được sử dụng.',
   })
@@ -32,23 +36,19 @@ export class CreateUserDTO implements ICreateUserDTO {
   })
   @Transform(({ value }) => value.toLowerCase())
   @Transform(({ value }: TransformFnParams) => value?.trim())
-  LoginName: string;
+  userName: string;
 
   @IsNotEmpty()
   @IsString()
   @MinLength(8)
   @MaxLength(32)
-  @ApiProperty({ description: 'Mật khẩu vào game' })
+  @ApiProperty({ description: 'Mật khẩu' })
   @Transform(({ value }: TransformFnParams) => value?.trim())
-  Password: string;
-
-  @IsOptional()
-  @ApiProperty({ required: false })
-  @Transform(({ value }: TransformFnParams) => value?.trim())
-  Email?: string;
+  passWord: string;
 
   @IsOptional()
   @ApiProperty()
+  @ApiProperty({ required: false })
   @Transform(({ value }: TransformFnParams) => value?.trim())
-  Phone?: string;
+  phone?: string;
 }

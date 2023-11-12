@@ -20,7 +20,7 @@ import * as winston from 'winston';
     TypeOrmModule.forFeature([UserEntity]),
   ],
   providers: [IsUserAlreadyExistConstraint, UserService],
-  controllers: [UserController],
+  controllers: [UserController, AdminController],
   exports: [UserService],
 })
 export class UsersModule {}

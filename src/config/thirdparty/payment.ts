@@ -20,7 +20,7 @@ export enum CardTypes {
 }
 
 export enum Gateways {
-  AMT = 'atm',
+  AMT = 'banking',
   MOBI_CARD = 'mobi',
 }
 

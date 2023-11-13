@@ -19,8 +19,8 @@ export class PaymentEntity
   implements IBaseModel<IPaymentModel>
 {
   @PrimaryGeneratedColumn('increment')
-  @PrimaryColumn({ name: 'id', type: 'int' })
-  id?: string;
+  @PrimaryColumn({ name: 'ID', type: 'int' })
+  id: number;
 
   @Column({ name: 'username', type: 'varchar', length: 32 })
   userName: string;
@@ -28,25 +28,17 @@ export class PaymentEntity
   @Column({ name: 'coin', type: 'bigint' })
   coin: number;
 
-  @Column({ name: 'gateway_api', type: 'varchar' })
-  gateway?: string;
-
-  @Column({ name: 'cardtype', type: 'varchar' })
+  @Column({ name: 'type', type: 'varchar' })
   cardType?: CardTypes;
 
   @Column({ name: 'cardseri', type: 'varchar' })
   cardSeri?: string;
-  @Column({ name: 'cardvalue', type: 'float', nullable: false })
+
+  @Column({ name: 'cardvalue', type: 'bigint', nullable: false })
   cardValue?: number;
+
   @Column({ name: 'cardpin', type: 'varchar' })
   cardPin?: string;
-
-  @Column({ name: 'transaction_status', type: 'varchar' })
-  transaction?: string;
-  @Column({ name: 'transaction_id', type: 'varchar' })
-  transactionId?: string;
-  @Column({ name: 'transaction_code', type: 'char' })
-  transactionCode?: string;
 
   @Column({ type: 'nvarchar', name: 'content' })
   comment?: string;
@@ -54,15 +46,14 @@ export class PaymentEntity
   @Column({ type: 'int', name: 'status', nullable: false })
   status = 0;
 
-  @CreateDateColumn({ name: 'createtime', type: 'datetime' })
+  @CreateDateColumn({ type: 'datetime' })
   createdAt?: Date;
-  @UpdateDateColumn({ name: 'verifytime', type: 'datetime' })
+  @UpdateDateColumn({ type: 'datetime' })
   updatedAt?: Date;
 
   @BeforeInsert()
   createTime(): void {
     this.createdAt = new Date();
-    this.updatedAt = new Date();
   }
 
   @BeforeUpdate()

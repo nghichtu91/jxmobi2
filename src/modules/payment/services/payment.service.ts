@@ -1,19 +1,17 @@
-import { CardTypes, GATEWAY_URL } from '@config';
-import { HttpService } from '@nestjs/axios';
+import { CardTypes } from '@config';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AxiosResponse } from 'axios';
-import { Observable } from 'rxjs';
-import { Repository, Between, Like, In } from 'typeorm';
-import { IPaymentResponseB, ISearchPaymentParams, PaymentModel } from '../dtos';
-import { CreatePaymentDTO } from '../dtos/create.dto';
+import { Repository, Between, Like, In, UpdateResult } from 'typeorm';
+import { ISearchPaymentParams } from '../dtos';
+import { ICreatePaymentDto } from '../dtos/createPayment.dto';
 import { IPaymentUpdateDTO } from '../dtos/update.dto';
 import { PaymentEntity } from '../entities';
 
 interface IPaymentService {
-  checkCardMobi?: any;
-  list(paged: number, filters: ISearchPaymentParams): any;
-  total(filter: ISearchPaymentParams): Promise<number>;
+  //list(paged: number, filters: ISearchPaymentParams): any;
+  //total(filter: ISearchPaymentParams): Promise<number>;
+  add(createDto: ICreatePaymentDto): Promise<PaymentEntity>;
+  update(id: number, updateDto: IPaymentUpdateDTO): Promise<UpdateResult>;
 }
 
 @Injectable()
@@ -21,32 +19,17 @@ export class PaymentService implements IPaymentService {
   constructor(
     @InjectRepository(PaymentEntity)
     private paymentRepo: Repository<PaymentEntity>,
-    private readonly httpService: HttpService,
   ) {}
 
-  checkCardMobi(): void {
-    console.log(GATEWAY_URL);
-    // return this.httpService.post<IPaymentResponseB>(GATEWAY_URL, data);
-  }
-
-  instert(data: CreatePaymentDTO) {
+  add(data: ICreatePaymentDto) {
     const creating = this.paymentRepo.create(data);
     return this.paymentRepo.save(creating);
   }
 
-  async getUserNameByTransId(trans_id: string): Promise<PaymentEntity> {
-    const findUsers = await this.paymentRepo.find({
-      where: {
-        transactionCode: trans_id,
-      },
-    });
-    return findUsers[0];
-  }
-
-  updateStatus(trans_id: string, status: number, message?: string) {
+  updateStatus(id: number, status: number, message?: string) {
     return this.paymentRepo.update(
       {
-        transactionCode: trans_id,
+        id: id,
       },
       {
         status: status,
@@ -55,15 +38,20 @@ export class PaymentService implements IPaymentService {
     );
   }
 
-  update(trans_id: string, data: IPaymentUpdateDTO) {
-    const createUpdate = this.paymentRepo.create(data);
+  update(id: number, updateDto: IPaymentUpdateDTO) {
+    const updateEntity = this.paymentRepo.create({
+      ...updateDto,
+      coin: updateDto.cardValue,
+    });
+
     return this.paymentRepo.update(
       {
-        transactionCode: trans_id,
+        id,
       },
-      createUpdate,
+      updateEntity,
     );
   }
+
   async getTotalByUserName(userName: string) {
     return await this.paymentRepo.count({
       where: {
@@ -75,35 +63,6 @@ export class PaymentService implements IPaymentService {
         ]),
       },
     });
-  }
-
-  async getPaymentsByUsername(
-    userName: string,
-    paged = 1,
-    pageSize = 12,
-  ): Promise<PaymentEntity[]> {
-    // != 'ATM' OR cardtype !='atm'
-    const sql = `SELECT coin as coin, id, status, cardpin as cardPin, gateway_api as gateway, cardtype as cardType, content as comment, cardvalue as cardValue, cardseri as cardSeri FROM (
-      SELECT ROW_NUMBER() OVER(ORDER BY id DESC) AS Numero,
-             * FROM payment_card_log WHERE username =@2 AND cardtype IN (@3, @4, @5)
-        ) AS TBL
-WHERE Numero BETWEEN ((@0 - 1) * @1 + 1) AND (@0 * @1) 
-ORDER BY id DESC`;
-
-    return this.paymentRepo
-      .query(sql, [
-        paged,
-        pageSize,
-        userName,
-        CardTypes.MOBIFONE,
-        CardTypes.VIETTEL,
-        CardTypes.VINAPHONE,
-      ])
-      .then((s: PaymentModel[]) =>
-        s.map((c) => {
-          return this.paymentRepo.create(c);
-        }),
-      );
   }
 
   async staticByYear(year: number) {
@@ -150,54 +109,10 @@ ORDER BY id DESC`;
     return total || 0;
   }
 
-  async list(
-    paged = 1,
-    filter: ISearchPaymentParams,
-  ): Promise<PaymentEntity[]> {
-    const { limit = 12, status, keyword = '', form, to } = filter;
-    let subSql = `SELECT ROW_NUMBER() OVER(ORDER BY createtime DESC) AS Numero, * FROM payment_card_log`;
-
-    const wheres: string[] = [`cardtype IN (@6, @7, @8, @9)`];
-
-    if (status) {
-      wheres.push('status = @2');
-    }
-
-    if (keyword != '' && keyword) {
-      wheres.push('username LIKE @3');
-    }
-
-    if (form && to) {
-      wheres.push('createtime BETWEEN @4 AND @5');
-    }
-
-    if (wheres.length > 0) {
-      subSql = `${subSql} WHERE ${wheres.join(' AND ')}`;
-    }
-
-    const sql = `SELECT coin as coin, username as userName, createtime as createdAt, id, status, cardpin as cardPin, gateway_api as gateway, cardtype as cardType, content as comment, cardvalue as cardValue, cardseri as cardSeri FROM (${subSql}) AS TBL
-                WHERE Numero BETWEEN ((@0 - 1) * @1 + 1) AND (@0 * @1) 
-            ORDER BY id DESC`;
-
-    return this.paymentRepo
-      .query(sql, [
-        paged,
-        limit,
-        status,
-        keyword ? `%${keyword}%` : '',
-        form,
-        to,
-        CardTypes.MOBIFONE,
-        CardTypes.VIETTEL,
-        CardTypes.VINAPHONE,
-        CardTypes.ATM,
-      ])
-      .then((s: PaymentModel[]) =>
-        s.map((c) => {
-          return this.paymentRepo.create(c);
-        }),
-      );
-  }
+  // async list(
+  //   paged = 1,
+  //   filter: ISearchPaymentParams,
+  // ): Promise<PaymentEntity[]> {}
 
   async total(filter: ISearchPaymentParams): Promise<number> {
     const { keyword = '', form, to, status } = filter;

@@ -3,7 +3,6 @@ import { Module } from '@nestjs/common';
 import { UserEntity } from './entities';
 import { UserService } from './services';
 import { UserController, AdminController } from './controllers';
-// import { UserSubscriber } from './subscribers';
 import { IsUserAlreadyExistConstraint } from './validators/IsUserAlreadyExist';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';

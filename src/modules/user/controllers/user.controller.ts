@@ -114,7 +114,7 @@ export class UserController {
               en_US: 'Đổi mật khẩu',
             },
             path: '/user/change-password',
-          },
+          }
         ],
       },
       {

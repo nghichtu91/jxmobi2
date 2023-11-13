@@ -1,7 +1,14 @@
 import { CardTypes } from '@config';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, Like, In, UpdateResult } from 'typeorm';
+import {
+  Repository,
+  Between,
+  Like,
+  In,
+  UpdateResult,
+  FindOptionsWhere,
+} from 'typeorm';
 import { ISearchPaymentParams } from '../dtos';
 import { ICreatePaymentDto } from '../dtos/createPayment.dto';
 import { IPaymentUpdateDTO } from '../dtos/update.dto';
@@ -109,10 +116,22 @@ export class PaymentService implements IPaymentService {
     return total || 0;
   }
 
-  // async list(
-  //   paged = 1,
-  //   filter: ISearchPaymentParams,
-  // ): Promise<PaymentEntity[]> {}
+  async list(
+    paged = 1,
+    filter: ISearchPaymentParams,
+  ): Promise<[PaymentEntity[], number]> {
+    const limit = Number(filter.limit);
+    const offset = (Number(paged) - 1) * limit;
+    console.log(filter?.status);
+    const where: FindOptionsWhere<PaymentEntity> = {
+      status: filter?.status || 0,
+    };
+    return this.paymentRepo.findAndCount({
+      where,
+      take: limit,
+      skip: offset,
+    });
+  }
 
   async total(filter: ISearchPaymentParams): Promise<number> {
     const { keyword = '', form, to, status } = filter;

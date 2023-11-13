@@ -135,8 +135,8 @@ export class PaymentController {
     @Query('keyword') keyword: string,
     @Query('to') to: string,
     @Query('form') form: string,
-    @Query('status') status: number,
-  ) {
+    @Query('status') status = 0,
+  ): Promise<IPageReponse<PaymentEntity>> {
     if (!this.pemission(currentUser).granted) {
       throw new HttpException(`Không có quyền truy cập`, HttpStatus.FORBIDDEN);
     }
@@ -150,17 +150,13 @@ export class PaymentController {
       limit,
       status,
     };
-
-    const total = await this.paymentService.total(filters);
-    // const payments = await this.paymentService.list(paged, filters);
-
-    const vv: IPageReponse<PaymentEntity> = {
+    const [payments, count] = await this.paymentService.list(paged, filters);
+    return {
       pageNum: paged,
       pageSize: 12,
-      total: total,
-      data: [],
+      total: count,
+      data: payments,
     };
-    return vv;
   }
 
   //#region payment

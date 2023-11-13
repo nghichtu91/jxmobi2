@@ -19,11 +19,16 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { IUpdateUserDTO, UpdateUserDTO } from '../dtos';
+import { IUpdateUserDTO } from '../dtos';
 import { AppResources } from '@config';
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { PaymentService } from '@modules/payment/services';
-import dayjs from 'dayjs';
+import { UserReponseDto } from '../dtos/userReponse.dto';
+import { KTCoinService } from '@modules/jxmobi/services/ktcoin.service';
+
+enum AdminAction {
+  Addxu = 'addxu',
+}
 
 @Controller('admin')
 @ApiTags('Admin')
@@ -32,7 +37,8 @@ export class AdminController {
 
   constructor(
     private readonly userService: UserService,
-    // private readonly paymentService: PaymentService,
+    private readonly paymentService: PaymentService,
+    private readonly kTCoinService: KTCoinService,
     @InjectRolesBuilder()
     private readonly rolesBuilder: RolesBuilder,
   ) {}
@@ -64,32 +70,53 @@ export class AdminController {
     status: HttpStatus.SERVICE_UNAVAILABLE,
     description: 'Server errors',
   })
-  @ApiQuery({ name: 'paged', description: 'Trang hiện tại' })
-  @ApiQuery({ name: 'limit', description: 'Số item trong 1 trang' })
-  @ApiQuery({ name: 'keyword', description: 'Tài khoản cần tìm' })
+  @ApiQuery({
+    name: 'paged',
+    description: 'Trang hiện tại',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Số item trong 1 trang',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'keyword',
+    description: 'Tài khoản cần tìm',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'to',
+    description: 'Tài khoản cần tìm',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'form',
+    description: 'Tài khoản cần tìm',
+    required: false,
+  })
   @Get('users')
   async getUsers(
     @User() currentUser: ReqUser,
-    @Query('paged') paged: number,
+    @Query('paged') paged = 1,
     @Query('limit') limit = 12,
-    @Query('keyword') keyword: string,
-    @Query('to') to: string,
-    @Query('form') form: string,
+    @Query('keyword') keyword?: string,
   ) {
     if (!this.pemission(currentUser).granted) {
       throw new HttpException(`Không có quyền truy cập`, HttpStatus.FORBIDDEN);
     }
 
-    const f = form ? dayjs(form).format('YYYY-MM-DDTHH:mm:ss') : undefined;
-    const t = to ? dayjs(to).format('YYYY-MM-DDTHH:mm:ss') : undefined;
-
-    const count = await this.userService.getCount(keyword, f, t);
-    const data = await this.userService.getUsers(paged, limit, keyword, f, t);
+    // const count = await this.userService.getCount(keyword, f, t);
+    const [users, count] = await this.userService.getUsers(
+      paged,
+      limit,
+      keyword,
+    );
     return {
       pageNum: paged,
       total: count,
       pageSize: limit,
-      data: data,
+      data: users.map((userEntity) => new UserReponseDto(userEntity)),
     };
   }
 
@@ -152,27 +179,33 @@ export class AdminController {
   @Patch('users/:id/:action')
   @ApiParam({ name: 'id', description: 'tài khoản cần chỉnh sửa' })
   async updateUser(
-    @Body() body: IUpdateUserDTO,
+    @Body() { point }: IUpdateUserDTO,
     @Param('id') username: string,
-    @Param('action') action: string,
+    @Param('action') action: AdminAction,
     @User() userCurrent: ReqUser,
   ) {
     if (!this.pemission(userCurrent).granted) {
       throw new HttpException(`Không có quyền truy cập.`, HttpStatus.FORBIDDEN);
     }
     try {
-      const user = await this.userService.getUser(username);
-      if (!user) {
-        throw new HttpException(
-          `Tài khoản ${username} không tồn tại.`,
-          HttpStatus.NOT_FOUND,
-        );
+      switch (action) {
+        case AdminAction.Addxu:
+          await this.kTCoinService.updateKCoinByUserName(
+            username,
+            Number(point),
+          );
+          this.logger.log(
+            `[${AdminAction.Addxu}] tài khoản ${userCurrent.username} cộng ${point} ktcon vào tài khoản ${username}`,
+          );
+          break;
+        default:
+          break;
       }
     } catch (e: unknown) {
       const error = e as Error;
       this.logger.error(error.message);
       throw new HttpException(
-        `Có lỗi từ hệ thống`,
+        `[${AdminAction.Addxu}] Có lỗi từ hệ thống`,
         HttpStatus.SERVICE_UNAVAILABLE,
       );
     }

@@ -3,6 +3,7 @@ import { IsOptional, IsString } from 'class-validator';
 
 export type IUpdateUserDTO = {
   Password?: string;
+  point?: number;
 };
 
 export class UpdateUserDTO implements IUpdateUserDTO {

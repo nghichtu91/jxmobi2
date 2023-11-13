@@ -40,7 +40,6 @@ import {
   ICreatePaymentRequest,
 } from '../dtos/createPaymentRequest.dto';
 import { PaymentService } from '../services';
-import { UserService } from '@modules/user/services';
 import { ISearchPaymentParams } from '../dtos';
 import { PaymentEntity } from '../entities';
 import dayjs from 'dayjs';
@@ -62,7 +61,6 @@ export class PaymentController {
 
   constructor(
     private readonly paymentService: PaymentService,
-    private readonly userService: UserService,
     @InjectRolesBuilder()
     private readonly rolesBuilder: RolesBuilder,
   ) {}

@@ -11,6 +11,10 @@ interface IKtcoinService {
   exist(UserID: number): Promise<boolean>;
   available(UserID: number, coinNeed: number): Promise<boolean>;
   findOne(UserID: number): Promise<KTCoinEntity>;
+  updateKCoinByUserName(
+    username: string,
+    newKtCoin: number,
+  ): Promise<UpdateResult>;
 }
 
 @Injectable()
@@ -19,6 +23,18 @@ export class KTCoinService implements IKtcoinService {
     @InjectRepository(KTCoinEntity)
     private readonly ktcoinReporitory: Repository<KTCoinEntity>,
   ) {}
+
+  updateKCoinByUserName(
+    username: string,
+    newKtCoin: number,
+  ): Promise<UpdateResult> {
+    return this.ktcoinReporitory.update(
+      { UserName: username },
+      {
+        KCoin: () => `KCoin + ${newKtCoin}`,
+      },
+    );
+  }
 
   async findOne(UserID: number): Promise<KTCoinEntity> {
     return await this.ktcoinReporitory.findOne({

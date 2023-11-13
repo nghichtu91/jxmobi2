@@ -13,7 +13,6 @@ import { roles } from '@config';
 import ormconfig from '@config/databases/ormconfig';
 import { AppController } from '@modules/app/controllers/app.controller';
 import { AppService } from '@modules/app/services';
-import { JxMobiModule } from '@modules/jxmobi/jxmobi.module';
 
 @Module({
   imports: [
@@ -25,10 +24,10 @@ import { JxMobiModule } from '@modules/jxmobi/jxmobi.module';
     PassportModule,
     AccessControlModule.forRoles(roles),
     AuthModule,
-    //PaymentModule,
+    // PaymentModule,
     //UsersModule,
     //SmsModule,
-    JxMobiModule,
+    // JxMobiModule,
     CommonModule,
   ],
   controllers: [AppController],

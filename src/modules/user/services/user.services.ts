@@ -1,7 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { UserEntity } from '../entities';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository, UpdateResult, Between } from 'typeorm';
+import {
+  Like,
+  Repository,
+  UpdateResult,
+  Between,
+  FindOptionsWhere,
+} from 'typeorm';
 import { CreateUserDTO } from '../dtos/create.dto';
 import { ChangePassWordDTO, UpdateUserDTO } from '../dtos';
 import { createHash } from 'node:crypto';
@@ -127,39 +133,20 @@ export class UserService implements IUserService {
     paged = 1,
     pageSize = 12,
     keyword = '',
-    form?: string,
-    to?: string,
-  ): Promise<UserEntity[]> {
-    let sqlf = `SELECT ROW_NUMBER() OVER(ORDER BY nExtPoint1 DESC) AS Numero,
-    iid as id, cQuestion as question, cEMail as email, cAnswer as answer, cAccName as userName, cPhone as phone, cPasswordNoEncrypt as passwordNoEncrypt, cSecPasswordNoEncrypt as secPasswordNoEncrypt, nExtPoint as point, nExtPoint1 as point1, dRegDate as createdAt, cUpdateInfo as updateInfo FROM Account_Info
-    `;
-    const params: string[] = [];
-
-    if (keyword != '') {
-      params.push('cAccName LIKE @2 or cPhone LIKE @2 ');
+  ): Promise<[UserEntity[], number]> {
+    const limit = Number(pageSize);
+    const offset = (Number(paged) - 1) * limit;
+    const where: FindOptionsWhere<UserEntity> = {};
+    if (keyword) {
+      where.LoginName = Like(`%${keyword}%`);
     }
-
-    if (form && to) {
-      params.push('dRegDate BETWEEN @3 AND @4');
-    }
-
-    if (params.length > 0) {
-      sqlf = `${sqlf} WHERE ${params.join(' AND ')}`;
-    }
-
-    const sql = `SELECT * FROM (${sqlf}) AS TBL
-    WHERE Numero BETWEEN ((@0 - 1) * @1 + 1) AND (@0 * @1)
-    ORDER BY point1 DESC`;
-
-    const s = await this.userRepository.query(sql, [
-      paged,
-      pageSize,
-      keyword ? `%${keyword}%` : '',
-      form,
-      to,
-    ]);
-    return s.map((c: any) => {
-      return this.userRepository.create(c);
+    const users = this.userRepository.findAndCount({
+      select: ['ID', 'FullName', 'LoginName'],
+      where,
+      take: limit,
+      skip: offset,
     });
+
+    return users;
   }
 }

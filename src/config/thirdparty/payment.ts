@@ -13,10 +13,9 @@ import {
 } from '@config/application';
 
 export enum CardTypes {
-  VIETTEL = 'VIETTEL',
-  VINAPHONE = 'VINAPHONE',
-  MOBIFONE = 'MOBIFONE',
-  ATM = 'ATM',
+  VIETTEL = 'Viettel',
+  VINAPHONE = 'Vinaphone',
+  MOBIFONE = 'Mobifone',
 }
 
 export enum Gateways {
@@ -42,22 +41,21 @@ export const CardPriceList = {
 };
 
 export const Cardbonus = +process.env.CARD_BONUS || 0; // tính %;
-export const GATEWAY_URL =
-  process.env.GATEWAY_URL || 'https://naptudong.com/chargingws/v2';
+export const GATEWAY_URL = process.env.GATEWAY_URL;
 export const PARTNER_ID = PARTNERID;
-export const PARTNER_KEY = PARTNERKEY;
+export const PARTNER_KEY = process.env.PARTNER_KEY;
 
 /**
  * 
   @description 99 = CHỜ, 1 = THẺ ĐÚNG, 2 = THẺ SAI MỆNH GIÁ, 3 = THẺ LỖI, 4 = BẢO TRÌ
  */
-export type StatusPayment = '1' | '2' | '3' | '4' | '99';
+export type StatusPayment = '1' | '2' | '3' | '4' | '0';
 export enum PaymentStatus {
-  PENDING = '99',
-  SUCCEEDED = '1',
-  FAILEDAMOUNT = '2',
-  FAILED = '3',
-  MAINTENANCE = '4',
+  PENDING = 0,
+  SUCCEEDED = 1,
+  FAILEDAMOUNT = 2,
+  FAILED = 3,
+  MAINTENANCE = 4,
 }
 
 export const ATM_KEY = process.env.ATM_KEY || 'giahuyz_vlhoiucvn';

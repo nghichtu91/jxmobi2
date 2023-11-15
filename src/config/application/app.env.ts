@@ -46,6 +46,5 @@ export const CARD_VALUE_SEVEND = +process.env.CARD_VALUE_SEVEND || 600;
 export const CARD_VALUE_EIGHT = +process.env.CARD_VALUE_EIGHT || 1000;
 export const CARD_VALUE_NINE = +process.env.CARD_VALUE_NINE || 2000;
 
-export const PARTNERID = process.env.PARTNER_ID || '6471455261';
-export const PARTNERKEY =
-  process.env.PARTNER_KEY || '486b5afa44dc72a2c8cd991bc7f2a44e';
+export const PARTNERID = process.env.PARTNER_ID;
+export const PARTNERKEY = process.env.PARTNER_KEY;

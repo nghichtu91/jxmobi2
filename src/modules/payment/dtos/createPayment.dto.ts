@@ -4,7 +4,7 @@ import { CardTypes } from '@config';
 
 export type ICreatePaymentDto = Omit<
   IPaymentModel,
-  'id' | 'method' | 'transactionId' | 'action'
+  'id' | 'method' | 'transactionId' | 'action' | 'status'
 >;
 
 export class CreatePaymentDto implements ICreatePaymentDto {
@@ -17,6 +17,7 @@ export class CreatePaymentDto implements ICreatePaymentDto {
   private readonly _method?: string;
   private readonly _transactionId?: string;
   private readonly _action?: string;
+  private readonly _status?: number;
 
   constructor(
     { cardPin, cardSeri, cardValue, comment, cardType }: ICreatePaymentRequest,
@@ -24,6 +25,7 @@ export class CreatePaymentDto implements ICreatePaymentDto {
     gateway?: string,
     transactionId?: string,
     action?: string,
+    status?: number,
   ) {
     this._cardPin = cardPin;
     this._cardSeri = cardSeri;
@@ -34,6 +36,11 @@ export class CreatePaymentDto implements ICreatePaymentDto {
     this._method = gateway;
     this._action = action;
     this._transactionId = transactionId;
+    this._status = status || 0;
+  }
+
+  get status() {
+    return this._status;
   }
 
   get action() {

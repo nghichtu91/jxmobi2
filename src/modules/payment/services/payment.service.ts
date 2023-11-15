@@ -20,6 +20,10 @@ interface IPaymentService {
   update(id: number, updateDto: IPaymentUpdateDTO): Promise<UpdateResult>;
   get(id: number): Promise<PaymentEntity>;
   totalMoney(isToday?: boolean): Promise<number>;
+  historiesByUserName(
+    paged: number,
+    filter: ISearchPaymentParams,
+  ): Promise<[PaymentEntity[], number]>;
 }
 
 @Injectable()
@@ -146,6 +150,20 @@ export class PaymentService implements IPaymentService {
     console.log(filter?.status);
     const where: FindOptionsWhere<PaymentEntity> = {
       status: filter?.status || 0,
+    };
+    return this.paymentRepo.findAndCount({
+      where,
+      take: limit,
+      skip: offset,
+    });
+  }
+
+  async historiesByUserName(paged = 1, filter: ISearchPaymentParams) {
+    const limit = Number(filter.limit);
+    const offset = (Number(paged) - 1) * limit;
+    console.log(filter?.status);
+    const where: FindOptionsWhere<PaymentEntity> = {
+      userName: filter.keyword,
     };
     return this.paymentRepo.findAndCount({
       where,

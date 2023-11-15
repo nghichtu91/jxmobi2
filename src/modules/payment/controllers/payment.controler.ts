@@ -7,6 +7,8 @@ import {
   ATM_VALUE_ONE,
   ATM_VALUE_SECOND,
   ATM_VALUE_THIRD,
+  GATEWAY_URL,
+  PARTNER_KEY,
 } from '@config';
 import {
   Injectable,
@@ -41,6 +43,10 @@ import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { CreatePaymentDto } from '../dtos/createPayment.dto';
 import { KTCoinService } from '@modules/jxmobi/services/ktcoin.service';
 import { PaymentUpdateDTO } from '../dtos/update.dto';
+import { HttpService } from '@nestjs/axios';
+import qs from 'qs';
+import { catchError, firstValueFrom } from 'rxjs';
+import { AxiosError } from 'axios';
 
 interface IPageReponse<T> {
   pageNum: number;
@@ -54,6 +60,12 @@ enum PaymentAdminActions {
   REJECT = 'reject',
 }
 
+interface CheckCardReponse {
+  msg: string;
+  status: any;
+  title: string;
+  amount?: number;
+}
 @Injectable()
 @Controller('payments')
 @ApiTags('Payment')
@@ -63,6 +75,7 @@ export class PaymentController {
   constructor(
     private readonly paymentService: PaymentService,
     private readonly ktcoinService: KTCoinService,
+    private readonly httpService: HttpService,
     @InjectRolesBuilder()
     private readonly rolesBuilder: RolesBuilder,
   ) {}
@@ -119,8 +132,25 @@ export class PaymentController {
   @ApiOperation({
     summary: 'Danh sách lịch sử nạp',
   })
-  async listHistory() {
-    return true;
+  async listHistory(
+    @Query('paged') paged: number,
+    @Query('limit') limit = 12,
+    @User() { username }: ReqUser,
+  ) {
+    const filters: ISearchPaymentParams = {
+      keyword: username,
+      limit,
+    };
+    const [payments, count] = await this.paymentService.historiesByUserName(
+      paged,
+      filters,
+    );
+    return {
+      pageNum: paged,
+      pageSize: limit,
+      total: count,
+      data: payments,
+    };
   }
 
   @Get('admin/histories')
@@ -144,6 +174,7 @@ export class PaymentController {
     if (!this.pemission(currentUser).granted) {
       throw new HttpException(`Không có quyền truy cập`, HttpStatus.FORBIDDEN);
     }
+
     const f = form ? dayjs(form).format('YYYY-MM-DDTHH:mm:ss') : undefined;
     const t = to ? dayjs(to).format('YYYY-MM-DDTHH:mm:ss') : undefined;
 
@@ -157,7 +188,7 @@ export class PaymentController {
     const [payments, count] = await this.paymentService.list(paged, filters);
     return {
       pageNum: paged,
-      pageSize: 12,
+      pageSize: limit,
       total: count,
       data: payments,
     };
@@ -188,16 +219,76 @@ export class PaymentController {
     if (!Object.values(Gateways).includes(gateway)) {
       throw new HttpException(
         'Cổng nạp không hỗ trợ phương thức thanh toán này!',
-        400,
+        HttpStatus.NOT_FOUND,
       );
     }
 
-    const createDto = new CreatePaymentDto(body, username, gateway);
-    return this.paymentService.add(createDto);
+    const data = qs.stringify({
+      APIkey: PARTNER_KEY,
+      mathe: body.cardPin,
+      seri: body.cardSeri,
+      type: body.cardType,
+      menhgia: body.cardValue,
+      content: '1548845151',
+    });
+
+    const config = {
+      method: 'post',
+      maxBodyLength: Infinity,
+      url: GATEWAY_URL,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Cookie:
+          'XSRF-TOKEN=eyJpdiI6Imp5dUpFQkxYaEVZbzNnMTA3dGx3QXc9PSIsInZhbHVlIjoiOWdlYnRqODBkVkJBbjVDRzZHVVlvSUdwSW9HWVgxN1N3aDdyUEFOcjFEVTE5WWNNSFhiZkRWbnhiL2RITFRpbXJwbks4SjFlcGRTRXFtTXJNV3dHL2xOK0Z6NDNrK2hZRCtyU0IwRFZaUjMvYWx5VkFLTVZzUVh0dFJiS2locUoiLCJtYWMiOiI2MmIxZWQwM2QxNjhlZGI1MzMwZDBmNjRiNjc0Njg1ZTczMWM0MTIwM2FmMzRlMzE1MTk2OGZmNDQ0ZWVkMjhkIiwidGFnIjoiIn0%3D; laravel_session=Z194Oa47VlLrnmG44FH2BUg37Xcq9yuvflBLaYmx',
+      },
+      data: data,
+    };
+
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService.request<CheckCardReponse>(config).pipe(
+          catchError((error: AxiosError) => {
+            this.logger.error(error.response.data);
+            throw 'An error happened!';
+          }),
+        ),
+      );
+      //       "00" -> Thẻ thành công
+      // "99" -> thẻ sai mệnh giá
+      // "-10" -> thẻ sai
+      // "-9" -> thẻ chờ duyệt
+      // "2" -> lỗi không kiểm tra được!
+      console.log(data);
+      switch (data.status) {
+        case '00':
+          const createDto = new CreatePaymentDto(body, username, gateway);
+          await this.paymentService.add(createDto);
+          break;
+        case -10:
+        case '-10':
+          return new HttpException(data.msg, HttpStatus.BAD_GATEWAY);
+        case -9:
+        case '-9':
+          return new HttpException(
+            'Thẻ đang chờ kiểm duyệt',
+            HttpStatus.ACCEPTED,
+          );
+        case 2:
+        case '2':
+          return new HttpException(data?.msg, HttpStatus.ACCEPTED);
+        default:
+          break;
+      }
+    } catch (ex) {
+      return new HttpException(
+        'Lỗi nạp thẻ, vui lòng giữ lại thẻ.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
   //#endregion
 
-  @Post(':username/:payment/:action')
+  @Post(':payment/:action')
   @JwtAuth()
   @ApiOperation({ summary: 'Nạp thẻ' })
   @ApiParam({
@@ -209,7 +300,6 @@ export class PaymentController {
   async paymentactions(
     @User() currentUser: ReqUser,
     @Param('payment') id: number,
-    @Param('username') username: string,
     @Param('action') action: PaymentAdminActions,
     @Body('value') value: number,
   ) {
@@ -225,13 +315,13 @@ export class PaymentController {
       switch (action) {
         case PaymentAdminActions.ACCEPT:
           await this.ktcoinService.updateKCoinByUserName(
-            username,
+            payment.userName,
             payment?.cardValue,
           );
           const updatePaymentDto = new PaymentUpdateDTO(
             payment?.cardValue,
             1,
-            'admin',
+            currentUser.username,
             payment.cardValue,
           );
           this.paymentService.update(id, updatePaymentDto);
@@ -240,7 +330,7 @@ export class PaymentController {
           );
           return new HttpException(`Đã duyệt payment`, HttpStatus.ACCEPTED);
         case PaymentAdminActions.REJECT:
-          this.paymentService.updateStatus(id, -1, undefined, 'admin');
+          this.paymentService.updateStatus(id, 3, undefined, 'admin');
           this.logger.log(
             `[${action}] ${currentUser.username} đã từ chối payment ${id}, có mệnh giá là: ${payment?.cardValue}`,
           );

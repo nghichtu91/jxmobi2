@@ -8,7 +8,7 @@ import {
   BeforeInsert,
 } from 'typeorm';
 import { IBaseModel } from '@shared';
-import { IRechageLogs } from '@Modules/jxmobi/dtos';
+import { IRechageLogs } from '@modules/jxmobi/dtos';
 
 @Entity({ name: 'RechageLogs' })
 export class RechageLogsEntity

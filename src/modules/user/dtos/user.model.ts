@@ -1,4 +1,4 @@
-import { IKTCoin } from '@Modules/jxmobi/dtos/ktcoin.model';
+import { IKTCoin } from '@modules/jxmobi/dtos/ktcoin.model';
 
 export interface IUserModel {
   ID: number;

@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { IBaseModel } from '@shared';
-import { IKTCoin } from '@Modules/jxmobi/dtos';
+import { IKTCoin } from '@modules/jxmobi/dtos';
 
 @Entity({ name: 'KTCoins' })
 export class KTCoinEntity extends BaseEntity implements IBaseModel<IKTCoin> {

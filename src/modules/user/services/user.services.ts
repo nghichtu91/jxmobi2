@@ -10,10 +10,10 @@ import {
 } from 'typeorm';
 import { CreateUserDTO } from '../dtos/create.dto';
 import { ChangePassWordDTO, UpdateUserDTO } from '../dtos';
-import { createHash } from 'node:crypto';
 
 interface IUserService {
   getUser(userName: string): Promise<UserEntity>;
+  total(): Promise<number>;
 }
 
 @Injectable()
@@ -23,6 +23,10 @@ export class UserService implements IUserService {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
   ) {}
+
+  total() {
+    return this.userRepository.count();
+  }
 
   findByUserName(userName: string) {
     return this.userRepository.findOne({

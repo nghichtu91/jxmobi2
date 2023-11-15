@@ -147,13 +147,17 @@ export class AdminController {
       //   return this.paymentService.staticByYear(year);
       // case 'paymentformto':
       //   return this.paymentService.staticByFormTo(form, to);
-      // case 'totals':
-      //   return {
-      //     accounts: await this.userService.getCount(''),
-      //     payments: await this.paymentService.count(),
-      //     money: await this.paymentService.sumMomey(),
-      //     moneyToday: await this.paymentService.sumMoneyToday(),
-      //   };
+      case 'totals':
+        const totalAccount = await this.userService.total();
+        const totalPayment = await this.paymentService.total();
+        const totalMoney = await this.paymentService.totalMoney();
+        const totalMoneyToDay = await this.paymentService.totalMoney(true);
+        return {
+          accounts: totalAccount,
+          payments: totalPayment,
+          money: totalMoney,
+          moneyToday: totalMoneyToDay || 0,
+        };
       default:
         throw new HttpException(``, HttpStatus.NOT_FOUND);
     }

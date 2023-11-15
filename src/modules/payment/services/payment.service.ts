@@ -3,23 +3,23 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Repository,
-  Between,
-  Like,
   In,
   UpdateResult,
   FindOptionsWhere,
+  Between,
 } from 'typeorm';
 import { ISearchPaymentParams } from '../dtos';
 import { ICreatePaymentDto } from '../dtos/createPayment.dto';
 import { IPaymentUpdateDTO } from '../dtos/update.dto';
 import { PaymentEntity } from '../entities';
+import dayjs from 'dayjs';
 
 interface IPaymentService {
-  //list(paged: number, filters: ISearchPaymentParams): any;
-  //total(filter: ISearchPaymentParams): Promise<number>;
+  total(filter?: ISearchPaymentParams): Promise<number>;
   add(createDto: ICreatePaymentDto): Promise<PaymentEntity>;
   update(id: number, updateDto: IPaymentUpdateDTO): Promise<UpdateResult>;
   get(id: number): Promise<PaymentEntity>;
+  totalMoney(isToday?: boolean): Promise<number>;
 }
 
 @Injectable()
@@ -28,6 +28,21 @@ export class PaymentService implements IPaymentService {
     @InjectRepository(PaymentEntity)
     private paymentRepo: Repository<PaymentEntity>,
   ) {}
+
+  totalMoney(isToday?: boolean): Promise<number> {
+    const where: FindOptionsWhere<PaymentEntity> = {
+      status: 1,
+    };
+    if (isToday) {
+      const startDay = dayjs().startOf('date');
+      const endDay = dayjs().endOf('date');
+      where.createdAt = Between(
+        dayjs(startDay.format('YYYY-MM-DDTHH:mm:ss').toString()).toDate(),
+        dayjs(endDay.format('YYYY-MM-DDTHH:mm:ss').toString()).toDate(),
+      );
+    }
+    return this.paymentRepo.sum('cardValue', where);
+  }
 
   get(id: number): Promise<PaymentEntity> {
     return this.paymentRepo.findOne({
@@ -139,31 +154,7 @@ export class PaymentService implements IPaymentService {
     });
   }
 
-  async total(filter: ISearchPaymentParams): Promise<number> {
-    const { keyword = '', form, to, status } = filter;
-    const where: any = {
-      cardType: In([
-        CardTypes.MOBIFONE,
-        CardTypes.VIETTEL,
-        CardTypes.VINAPHONE,
-        CardTypes.ATM,
-      ]),
-    };
-
-    if (keyword !== '' && keyword) {
-      where.userName = Like(`%${keyword}%`);
-    }
-
-    if (status > 0) {
-      where.status = status;
-    }
-
-    if (form && to) {
-      where.createdAt = Between(form, to);
-    }
-
-    return await this.paymentRepo.count({
-      where: where,
-    });
+  async total(): Promise<number> {
+    return await this.paymentRepo.count();
   }
 }

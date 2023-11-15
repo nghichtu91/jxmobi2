@@ -12,6 +12,9 @@ export interface IPaymentModel {
   status?: number;
   createdAt?: Date;
   updatedAt?: Date;
+  method?: string;
+  transactionId?: string;
+  action?: string;
 }
 
 export class PaymentModel implements IPaymentModel {

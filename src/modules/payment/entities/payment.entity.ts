@@ -43,6 +43,13 @@ export class PaymentEntity
   @Column({ type: 'nvarchar', name: 'content' })
   comment?: string;
 
+  @Column({ type: 'nvarchar', name: 'method' })
+  method?: string;
+  @Column({ type: 'nvarchar', name: 'transactionId' })
+  transactionId?: string;
+  @Column({ type: 'nvarchar', name: 'action' })
+  action?: string;
+
   @Column({ type: 'int', name: 'status', nullable: false })
   status = 0;
 

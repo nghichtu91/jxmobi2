@@ -19,6 +19,7 @@ interface IPaymentService {
   //total(filter: ISearchPaymentParams): Promise<number>;
   add(createDto: ICreatePaymentDto): Promise<PaymentEntity>;
   update(id: number, updateDto: IPaymentUpdateDTO): Promise<UpdateResult>;
+  get(id: number): Promise<PaymentEntity>;
 }
 
 @Injectable()
@@ -28,12 +29,20 @@ export class PaymentService implements IPaymentService {
     private paymentRepo: Repository<PaymentEntity>,
   ) {}
 
+  get(id: number): Promise<PaymentEntity> {
+    return this.paymentRepo.findOne({
+      where: {
+        id: id,
+      },
+    });
+  }
+
   add(data: ICreatePaymentDto) {
     const creating = this.paymentRepo.create(data);
     return this.paymentRepo.save(creating);
   }
 
-  updateStatus(id: number, status: number, message?: string) {
+  updateStatus(id: number, status: number, message?: string, action?: string) {
     return this.paymentRepo.update(
       {
         id: id,
@@ -41,16 +50,13 @@ export class PaymentService implements IPaymentService {
       {
         status: status,
         comment: message,
+        action: action,
       },
     );
   }
 
   update(id: number, updateDto: IPaymentUpdateDTO) {
-    const updateEntity = this.paymentRepo.create({
-      ...updateDto,
-      coin: updateDto.cardValue,
-    });
-
+    const updateEntity = this.paymentRepo.create(updateDto);
     return this.paymentRepo.update(
       {
         id,

@@ -17,9 +17,7 @@ import { QueryFailedError } from 'typeorm';
 import { KTCoinUpdateDto } from '../dtos/ktcoinUpdate.dto';
 import { RechangeService } from '../services/rechange.service';
 import { IRechangeRequest } from '../dtos/rẹchageRequest.dto';
-import { RechangeCreateDto } from '../dtos/rechangeCreate.dto';
 import { TranlogsService } from '../services/tranlogs.service';
-import { TranlogsCreateDto } from '../dtos/tranlogCreate.dto';
 import { KTCoinReponse } from '../dtos/ktcoinReponse.dto';
 
 @ApiTags('jxmobi')

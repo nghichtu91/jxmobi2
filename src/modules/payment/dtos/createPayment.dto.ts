@@ -2,30 +2,50 @@ import { ICreatePaymentRequest } from './createPaymentRequest.dto';
 import { IPaymentModel } from './payment.model';
 import { CardTypes } from '@config';
 
-export type ICreatePaymentDto = Omit<IPaymentModel, 'id'>;
+export type ICreatePaymentDto = Omit<
+  IPaymentModel,
+  'id' | 'method' | 'transactionId' | 'action'
+>;
 
 export class CreatePaymentDto implements ICreatePaymentDto {
-  private readonly _id: number;
   private readonly _userName?: string;
-  private readonly _coin?: number;
-  private readonly _status?: number;
   private readonly _cardType?: CardTypes;
   private readonly _cardPin?: string;
   private readonly _cardSeri?: string;
   private readonly _cardValue?: number;
   private readonly _comment?: string;
+  private readonly _method?: string;
+  private readonly _transactionId?: string;
+  private readonly _action?: string;
 
   constructor(
     { cardPin, cardSeri, cardValue, comment, cardType }: ICreatePaymentRequest,
     username: string,
-    gateway?: CardTypes,
+    gateway?: string,
+    transactionId?: string,
+    action?: string,
   ) {
     this._cardPin = cardPin;
     this._cardSeri = cardSeri;
     this._cardValue = cardValue;
-    this._cardType = cardType || gateway;
+    this._cardType = cardType;
     this._comment = comment;
     this._userName = username;
+    this._method = gateway;
+    this._action = action;
+    this._transactionId = transactionId;
+  }
+
+  get action() {
+    return this._action;
+  }
+
+  get transactionId() {
+    return this._transactionId;
+  }
+
+  get method() {
+    return this._method;
   }
 
   get userName() {

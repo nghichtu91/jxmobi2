@@ -1,16 +1,9 @@
 import {
-  Commands,
   Gateways,
-  PARTNER_ID,
-  PARTNER_KEY,
-  PaymentStatus,
   CardPriceList,
   Cardbonus,
-  ATM_KEY,
   ATM_RATE,
   AppResources,
-  BOT_CHAT_ID,
-  CardTypes,
   ATM_VALUE_ONE,
   ATM_VALUE_SECOND,
   ATM_VALUE_THIRD,
@@ -31,6 +24,7 @@ import {
   ApiBody,
   ApiNotFoundResponse,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -45,12 +39,19 @@ import { PaymentEntity } from '../entities';
 import dayjs from 'dayjs';
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { CreatePaymentDto } from '../dtos/createPayment.dto';
+import { KTCoinService } from '@modules/jxmobi/services/ktcoin.service';
+import { PaymentUpdateDTO } from '../dtos/update.dto';
 
 interface IPageReponse<T> {
   pageNum: number;
   pageSize: number;
   total: number;
   data: T[];
+}
+
+enum PaymentAdminActions {
+  ACCEPT = 'accept',
+  REJECT = 'reject',
 }
 
 @Injectable()
@@ -61,6 +62,7 @@ export class PaymentController {
 
   constructor(
     private readonly paymentService: PaymentService,
+    private readonly ktcoinService: KTCoinService,
     @InjectRolesBuilder()
     private readonly rolesBuilder: RolesBuilder,
   ) {}
@@ -117,7 +119,9 @@ export class PaymentController {
   @ApiOperation({
     summary: 'Danh sách lịch sử nạp',
   })
-  async listHistory() {}
+  async listHistory() {
+    return true;
+  }
 
   @Get('admin/histories')
   @JwtAuth({
@@ -188,8 +192,73 @@ export class PaymentController {
       );
     }
 
-    const createDto = new CreatePaymentDto(body, username);
+    const createDto = new CreatePaymentDto(body, username, gateway);
     return this.paymentService.add(createDto);
   }
   //#endregion
+
+  @Post(':username/:payment/:action')
+  @JwtAuth()
+  @ApiOperation({ summary: 'Nạp thẻ' })
+  @ApiParam({
+    name: 'value',
+    type: Number,
+    required: false,
+    description: 'Cần chỉnh lại mệnh giá cho payment',
+  })
+  async paymentactions(
+    @User() currentUser: ReqUser,
+    @Param('payment') id: number,
+    @Param('username') username: string,
+    @Param('action') action: PaymentAdminActions,
+    @Body('value') value: number,
+  ) {
+    if (!this.pemission(currentUser).granted) {
+      throw new HttpException(`Không có quyền truy cập`, HttpStatus.FORBIDDEN);
+    }
+    const payment = await this.paymentService.get(id);
+
+    if (!payment) {
+      return new HttpException(`Không tìm thấy payment`, HttpStatus.NOT_FOUND);
+    }
+    try {
+      switch (action) {
+        case PaymentAdminActions.ACCEPT:
+          await this.ktcoinService.updateKCoinByUserName(
+            username,
+            payment?.cardValue,
+          );
+          const updatePaymentDto = new PaymentUpdateDTO(
+            payment?.cardValue,
+            1,
+            'admin',
+            payment.cardValue,
+          );
+          this.paymentService.update(id, updatePaymentDto);
+          this.logger.log(
+            `[${action}] ${currentUser.username} đã duyệt payment ${id}, có mệnh giá là: ${payment?.cardValue}`,
+          );
+          return new HttpException(`Đã duyệt payment`, HttpStatus.ACCEPTED);
+        case PaymentAdminActions.REJECT:
+          this.paymentService.updateStatus(id, -1, undefined, 'admin');
+          this.logger.log(
+            `[${action}] ${currentUser.username} đã từ chối payment ${id}, có mệnh giá là: ${payment?.cardValue}`,
+          );
+          return new HttpException(
+            `Payment bị từ chối`,
+            HttpStatus.BAD_REQUEST,
+          );
+        default:
+          return new HttpException(
+            `Hành động không hỗ trợ`,
+            HttpStatus.NOT_FOUND,
+          );
+      }
+    } catch (ex: unknown) {
+      throw new HttpException(
+        'Có lỗi từ hệ thống.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+  }
 }

@@ -8,10 +8,12 @@ import {
   HttpException,
   Logger,
   Query,
+  Post,
 } from '@nestjs/common';
 import { UserService } from '../services';
 import { JwtAuth, User, ReqUser, AppPermissionBuilder } from '@shared';
 import {
+  ApiBody,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
@@ -25,6 +27,9 @@ import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { PaymentService } from '@modules/payment/services';
 import { UserReponseDto } from '../dtos/userReponse.dto';
 import { KTCoinService } from '@modules/jxmobi/services/ktcoin.service';
+import { GiftCodeCreateDto } from '@modules/jxmobi/dtos/giftcode/giftcodeCreate.dto';
+import { GiftCodeService } from '@modules/jxmobi/services/gift.service';
+import { GiftCodeModel } from '@modules/jxmobi/dtos/giftcode/giftcode.model';
 
 enum AdminAction {
   Addxu = 'addxu',
@@ -39,6 +44,7 @@ export class AdminController {
     private readonly userService: UserService,
     private readonly paymentService: PaymentService,
     private readonly kTCoinService: KTCoinService,
+    private readonly giftCodeService: GiftCodeService,
     @InjectRolesBuilder()
     private readonly rolesBuilder: RolesBuilder,
   ) {}
@@ -213,5 +219,68 @@ export class AdminController {
         HttpStatus.SERVICE_UNAVAILABLE,
       );
     }
+  }
+
+  @JwtAuth()
+  @Post('giftcodes')
+  @ApiOkResponse({
+    type: GiftCodeModel,
+  })
+  @ApiBody({
+    type: GiftCodeCreateDto,
+  })
+  @ApiOkResponse({
+    type: GiftCodeModel,
+  })
+  async createGift(
+    @Body() body: GiftCodeCreateDto,
+    @User() userCurrent: ReqUser,
+  ) {
+    if (!this.pemission(userCurrent).granted) {
+      throw new HttpException(`Không có quyền truy cập.`, HttpStatus.FORBIDDEN);
+    }
+    try {
+      const isExist = this.giftCodeService.available(body.Code);
+      if (isExist) {
+        return new HttpException('Giftcode đã tồn tại', HttpStatus.BAD_REQUEST);
+      }
+      return this.giftCodeService.add(body);
+    } catch (e: unknown) {
+      const error = e as Error;
+      this.logger.error(error.message);
+      throw new HttpException(
+        `[${AdminAction.Addxu}] Có lỗi từ hệ thống`,
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+  }
+
+  @JwtAuth()
+  @Get('giftcodes')
+  @ApiQuery({
+    name: 'keyword',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'paged',
+    required: false,
+  })
+  async getGiftCodes(
+    @User() currentUser: ReqUser,
+    @Query('paged') paged = 1,
+    @Query('limit') limit = 12,
+    @Query('keyword') keyword?: string,
+  ) {
+    const [giftcodes, count] = await this.giftCodeService.list();
+    return {
+      pageNum: paged,
+      total: count,
+      pageSize: limit,
+      data: giftcodes,
+    };
   }
 }

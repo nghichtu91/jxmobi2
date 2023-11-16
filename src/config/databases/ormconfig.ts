@@ -17,6 +17,7 @@ import { KTCoinEntity } from '@modules/jxmobi/entties/ktcoin.entity';
 import { RechageLogsEntity } from '@modules/jxmobi/entties/rechageLogs.entity';
 import { TranLogsEntity } from '@modules/jxmobi/entties/tranlogs.entity';
 import { PaymentEntity } from '@modules/payment/entities';
+import { GiftCodeEntity } from '@modules/jxmobi/entties/gift.entity';
 
 export default {
   type: databaseType,
@@ -38,6 +39,7 @@ export default {
     RechageLogsEntity,
     TranLogsEntity,
     PaymentEntity,
+    GiftCodeEntity,
   ],
   options: {
     encrypt: false,

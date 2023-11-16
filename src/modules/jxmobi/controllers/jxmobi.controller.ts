@@ -9,16 +9,25 @@ import {
   HttpStatus,
   Put,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { RechangeReponse } from '../dtos/rechange.dto';
 import { KTCoinCreateDto } from '../dtos/ktcoinCreate.dto';
 import { KTCoinService } from '../services/ktcoin.service';
 import { QueryFailedError } from 'typeorm';
 import { KTCoinUpdateDto } from '../dtos/ktcoinUpdate.dto';
 import { RechangeService } from '../services/rechange.service';
-import { IRechangeRequest } from '../dtos/rẹchageRequest.dto';
+import { IRechangeRequest } from '../dtos/rechageRequest.dto';
 import { TranlogsService } from '../services/tranlogs.service';
 import { KTCoinReponse } from '../dtos/ktcoinReponse.dto';
+import { IGiftcodeRequest } from '../dtos/giftcode/giftcodeRequest.dto';
+import { GiftcodeResponse } from '../dtos/giftcode/giftcodeResponse.dto';
+import { GiftCodeService } from '../services/gift.service';
 
 @ApiTags('jxmobi')
 @Controller('jxmobi')
@@ -28,6 +37,7 @@ export class JxmobiController {
     private readonly ktCoinService: KTCoinService,
     private readonly rechangeService: RechangeService,
     private readonly tranLogService: TranlogsService,
+    private readonly giftCodeService: GiftCodeService,
   ) {}
 
   @Get('rechage')
@@ -52,6 +62,7 @@ export class JxmobiController {
     type: String,
     description: 'Trả về thông tin số kcoin hiện có',
   })
+  @ApiOperation({ summary: 'kiểm tra ktcoin cho game server' })
   async rechagePost(
     @Query('playdata')
     rechageRequest: string,
@@ -149,6 +160,44 @@ export class JxmobiController {
         `Tài khoản ${ktcoinUpdate.UserID} cập nhật ${ktcoinUpdate.NewKCoin} ktcoin.`,
       );
       return new HttpException('Cập nhật kcoin thành công.', HttpStatus.OK);
+    } catch (ex: unknown) {
+      throw new HttpException(
+        'Có lỗi từ hệ thống.',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+  }
+
+  @Post('giftcode')
+  @ApiQuery({
+    name: 'playdata',
+    type: String,
+    allowEmptyValue: true,
+    required: false,
+  })
+  @ApiOkResponse({
+    type: String,
+    description: 'Trả về thông tin giftcode',
+  })
+  @ApiOperation({ summary: 'kiểm tra giftcode cho game server' })
+  async useGiftCodePost(
+    @Query('playdata')
+    giftCodeRequest: string,
+  ) {
+    const { CodeActive } = JSON.parse(
+      giftCodeRequest,
+    ) as unknown as IGiftcodeRequest;
+
+    const giftcodeReponse = new GiftcodeResponse();
+
+    try {
+      const giftcode = await this.giftCodeService.use(CodeActive);
+      if (giftcode) {
+        giftcodeReponse.Status = 1;
+        giftcodeReponse.GiftItem = giftcode.ItemList;
+      }
+      const converted = JSON.stringify(giftcodeReponse);
+      return converted;
     } catch (ex: unknown) {
       throw new HttpException(
         'Có lỗi từ hệ thống.',

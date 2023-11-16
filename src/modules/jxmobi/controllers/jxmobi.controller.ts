@@ -27,7 +27,8 @@ import { TranlogsService } from '../services/tranlogs.service';
 import { KTCoinReponse } from '../dtos/ktcoinReponse.dto';
 import { IGiftcodeRequest } from '../dtos/giftcode/giftcodeRequest.dto';
 import { GiftcodeResponse } from '../dtos/giftcode/giftcodeResponse.dto';
-import { GiftCodeService } from '../services/gift.service';
+import { GiftCodeService } from '../services/giftcode.service';
+import { GiftcodelogsService } from '../services/giftcodelogs.service';
 
 @ApiTags('jxmobi')
 @Controller('jxmobi')
@@ -38,6 +39,7 @@ export class JxmobiController {
     private readonly rechangeService: RechangeService,
     private readonly tranLogService: TranlogsService,
     private readonly giftCodeService: GiftCodeService,
+    private readonly giftcodelogsService: GiftcodelogsService,
   ) {}
 
   @Get('rechage')
@@ -184,20 +186,33 @@ export class JxmobiController {
     @Query('playdata')
     giftCodeRequest: string,
   ) {
-    const { CodeActive } = JSON.parse(
+    const { CodeActive, ServerID, RoleActive } = JSON.parse(
       giftCodeRequest,
     ) as unknown as IGiftcodeRequest;
 
     const giftcodeReponse = new GiftcodeResponse();
 
     try {
+      const isUsed = await this.giftcodelogsService.isEist(
+        CodeActive,
+        RoleActive,
+        ServerID,
+      );
+
+      if (isUsed) {
+        giftcodeReponse.Status = -2;
+        giftcodeReponse.Msg = 'GIFT_CODE_USED';
+        return JSON.stringify(giftcodeReponse);
+      }
+
       const giftcode = await this.giftCodeService.use(CodeActive);
+
       if (giftcode) {
         giftcodeReponse.Status = 1;
         giftcodeReponse.GiftItem = giftcode.ItemList;
       }
-      const converted = JSON.stringify(giftcodeReponse);
-      return converted;
+
+      return JSON.stringify(giftcodeReponse);
     } catch (ex: unknown) {
       throw new HttpException(
         'Có lỗi từ hệ thống.',

@@ -7,8 +7,10 @@ import { RechangeService } from './services/rechange.service';
 import { RechageLogsEntity } from './entties/rechageLogs.entity';
 import { TranLogsEntity } from './entties/tranlogs.entity';
 import { TranlogsService } from './services/tranlogs.service';
-import { GiftCodeEntity } from './entties/gift.entity';
-import { GiftCodeService } from './services/gift.service';
+import { GiftCodeEntity } from './entties/giftcode.entity';
+import { GiftCodeService } from './services/giftcode.service';
+import { GiftcodelogsEntity } from './entties/giftcodelogs.entity';
+import { GiftcodelogsService } from './services/giftcodelogs.service';
 
 @Module({
   imports: [
@@ -17,10 +19,23 @@ import { GiftCodeService } from './services/gift.service';
       RechageLogsEntity,
       TranLogsEntity,
       GiftCodeEntity,
+      GiftcodelogsEntity,
     ]),
   ],
   controllers: [JxmobiController],
-  providers: [KTCoinService, RechangeService, TranlogsService, GiftCodeService],
-  exports: [KTCoinService, RechangeService, TranlogsService, GiftCodeService],
+  providers: [
+    KTCoinService,
+    RechangeService,
+    TranlogsService,
+    GiftCodeService,
+    GiftcodelogsService,
+  ],
+  exports: [
+    KTCoinService,
+    RechangeService,
+    TranlogsService,
+    GiftCodeService,
+    GiftcodelogsService,
+  ],
 })
 export class JxMobiModule {}

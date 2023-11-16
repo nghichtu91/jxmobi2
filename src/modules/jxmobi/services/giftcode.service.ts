@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { GiftCodeEntity } from '../entties/gift.entity';
+import { GiftCodeEntity } from '../entties/giftcode.entity';
 import { IGiftCodeCreateDto } from '../dtos/giftcode/giftcodeCreate.dto';
 import { IGiftCodeFilter } from '../dtos/giftcode/giftcodeFilter.dto';
 

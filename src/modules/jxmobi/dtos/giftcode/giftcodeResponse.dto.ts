@@ -11,6 +11,6 @@ export class GiftcodeResponse implements IGiftcodeResponse {
 
   constructor() {
     this.Status = -1;
-    this.Msg = 'Gift đã được sử dụng.';
+    this.Msg = 'Gift code không tồn tại.';
   }
 }

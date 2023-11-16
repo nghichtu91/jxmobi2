@@ -28,7 +28,7 @@ import { PaymentService } from '@modules/payment/services';
 import { UserReponseDto } from '../dtos/userReponse.dto';
 import { KTCoinService } from '@modules/jxmobi/services/ktcoin.service';
 import { GiftCodeCreateDto } from '@modules/jxmobi/dtos/giftcode/giftcodeCreate.dto';
-import { GiftCodeService } from '@modules/jxmobi/services/gift.service';
+import { GiftCodeService } from '@modules/jxmobi/services/giftcode.service';
 import { GiftCodeModel } from '@modules/jxmobi/dtos/giftcode/giftcode.model';
 
 enum AdminAction {

@@ -1,6 +1,7 @@
 import { IBaseModel } from '@shared';
 import {
   BaseEntity,
+  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
@@ -41,4 +42,9 @@ export class GiftCodeEntity
 
   @Column({ type: 'nvarchar', nullable: true })
   UserName: string;
+
+  @BeforeInsert()
+  create() {
+    this.TimeCreate = new Date();
+  }
 }

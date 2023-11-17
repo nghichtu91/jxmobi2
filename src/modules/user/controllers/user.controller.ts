@@ -180,6 +180,14 @@ export class UserController {
                 en_US: 'Lịch sử nạp thẻ',
               },
             },
+            {
+              code: 'Giftcodes',
+              label: {
+                zh_CN: 'Gift codes',
+                en_US: 'Gift codes',
+              },
+              path: '/admin/giftcodes',
+            },
           ],
         },
       ].concat(h);

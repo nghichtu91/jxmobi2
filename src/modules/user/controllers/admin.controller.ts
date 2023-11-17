@@ -9,6 +9,7 @@ import {
   Logger,
   Query,
   Post,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from '../services';
 import { JwtAuth, User, ReqUser, AppPermissionBuilder } from '@shared';
@@ -239,19 +240,20 @@ export class AdminController {
     if (!this.pemission(userCurrent).granted) {
       throw new HttpException(`Không có quyền truy cập.`, HttpStatus.FORBIDDEN);
     }
+
     try {
-      const isExist = this.giftCodeService.available(body.Code);
+      const isExist = await this.giftCodeService.isExist(
+        body.Code,
+        body.ServerID,
+      );
       if (isExist) {
-        return new HttpException('Giftcode đã tồn tại', HttpStatus.BAD_REQUEST);
+        throw new Error(`Giftcode ${body.Code} đã tồn tại`);
       }
       return this.giftCodeService.add(body);
     } catch (e: unknown) {
       const error = e as Error;
       this.logger.error(error.message);
-      throw new HttpException(
-        `[${AdminAction.Addxu}] Có lỗi từ hệ thống`,
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -282,5 +284,24 @@ export class AdminController {
       pageSize: limit,
       data: giftcodes,
     };
+  }
+
+  @JwtAuth()
+  @Delete('giftcodes/:id')
+  @ApiOperation({ summary: 'Xóa gift code' })
+  async deleteGiftCode(
+    @User() userCurrent: ReqUser,
+    @Param('id') giftcodeId: number,
+  ) {
+    if (!this.pemission(userCurrent).granted) {
+      throw new HttpException(`Không có quyền truy cập.`, HttpStatus.FORBIDDEN);
+    }
+    try {
+      await this.giftCodeService.delete(giftcodeId);
+    } catch (e: unknown) {
+      const error = e as Error;
+      this.logger.error(error.message);
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 }

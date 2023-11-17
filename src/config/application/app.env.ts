@@ -1,8 +1,8 @@
 import path from 'path';
 
 // Application configuration
-export const apiUrls = '';
-export const apiUrl = '';
+export const apiUrls = process.env.API_URLS.split('|');
+export const apiUrl = apiUrls[0];
 export const apiHost = new URL(apiUrl).origin;
 export const fullApiUrl = `${apiUrl}/${process.env.API_VERSION}`;
 export const clientUrl = process.env.CLIENT_URL;

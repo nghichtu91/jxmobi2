@@ -147,7 +147,6 @@ export class PaymentService implements IPaymentService {
   ): Promise<[PaymentEntity[], number]> {
     const limit = Number(filter.limit);
     const offset = (Number(paged) - 1) * limit;
-    console.log(filter?.status);
     const where: FindOptionsWhere<PaymentEntity> = {
       status: filter?.status || 0,
     };

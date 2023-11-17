@@ -8,7 +8,7 @@ import { IGiftCodeFilter } from '../dtos/giftcode/giftcodeFilter.dto';
 interface IGiftCodeService {
   add(createDto: IGiftCodeCreateDto): Promise<GiftCodeEntity>;
   isExist(code: string, serverId: number): Promise<boolean>;
-  list(filter?: IGiftCodeFilter): Promise<[GiftCodeEntity[], number]>;
+  list(paged: number, limit: number): Promise<[GiftCodeEntity[], number]>;
   use(code: string): Promise<GiftCodeEntity>;
   delete(id: number);
 }
@@ -38,8 +38,13 @@ export class GiftCodeService implements IGiftCodeService {
     });
   }
 
-  list(): Promise<[GiftCodeEntity[], number]> {
-    return this.giftCodeReporitory.findAndCount({});
+  list(paged: number, lim: number): Promise<[GiftCodeEntity[], number]> {
+    const limit = Number(lim);
+    const offset = (Number(paged) - 1) * limit;
+    return this.giftCodeReporitory.findAndCount({
+      take: limit,
+      skip: offset,
+    });
   }
 
   /*

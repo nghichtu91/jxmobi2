@@ -277,7 +277,7 @@ export class AdminController {
     @Query('limit') limit = 12,
     @Query('keyword') keyword?: string,
   ) {
-    const [giftcodes, count] = await this.giftCodeService.list();
+    const [giftcodes, count] = await this.giftCodeService.list(paged, limit);
     return {
       pageNum: paged,
       total: count,

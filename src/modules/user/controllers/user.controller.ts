@@ -135,10 +135,18 @@ export class UserController {
             path: '/payment',
           },
           {
+            code: 'payment',
+            label: {
+              zh_CN: 'Nạp qua ngân hàng',
+              en_US: 'Nạp qua ngân hàng',
+            },
+            path: '/payment/banking',
+          },
+          {
             code: 'payment-histories',
             label: {
-              zh_CN: 'Lịch sử nạp thẻ',
-              en_US: 'Lịch sử nạp thẻ',
+              zh_CN: 'Lịch sử nạp',
+              en_US: 'Lịch sử nạp',
             },
             path: '/payment/histories',
           },

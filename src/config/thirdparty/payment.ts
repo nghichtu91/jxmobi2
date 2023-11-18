@@ -9,13 +9,13 @@ import {
   CARD_VALUE_SIX,
   CARD_VALUE_THIRD,
   PARTNERID,
-  PARTNERKEY,
 } from '@config/application';
 
 export enum CardTypes {
   VIETTEL = 'Viettel',
   VINAPHONE = 'Vinaphone',
   MOBIFONE = 'Mobifone',
+  BANK = 'bank',
 }
 
 export enum Gateways {

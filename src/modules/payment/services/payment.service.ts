@@ -175,13 +175,15 @@ export class PaymentService implements IPaymentService {
       where,
       take: limit,
       skip: offset,
+      order: {
+        createdAt: 'DESC',
+      },
     });
   }
 
   async historiesByUserName(paged = 1, filter: ISearchPaymentParams) {
     const limit = Number(filter.limit);
     const offset = (Number(paged) - 1) * limit;
-    console.log(filter?.status);
     const where: FindOptionsWhere<PaymentEntity> = {
       userName: filter.keyword,
     };
@@ -189,6 +191,9 @@ export class PaymentService implements IPaymentService {
       where,
       take: limit,
       skip: offset,
+      order: {
+        createdAt: 'DESC',
+      },
     });
   }
 

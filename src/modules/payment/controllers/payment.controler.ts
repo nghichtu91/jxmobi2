@@ -4,6 +4,7 @@ import {
   GATEWAY_URL,
   PARTNER_KEY,
   PaymentStatus,
+  CardTypes,
 } from '@config';
 import {
   Injectable,
@@ -37,7 +38,7 @@ import { KTCoinService } from '@modules/jxmobi/services/ktcoin.service';
 import { PaymentUpdateDTO } from '../dtos/update.dto';
 import { HttpService } from '@nestjs/axios';
 import qs from 'qs';
-import { firstValueFrom } from 'rxjs';
+import { async, firstValueFrom } from 'rxjs';
 import randomstring from 'randomstring';
 
 interface IPageReponse<T> {
@@ -180,60 +181,100 @@ export class PaymentController {
         HttpStatus.NOT_FOUND,
       );
     }
-
-    const cardInfo = qs.stringify({
-      APIkey: PARTNER_KEY,
-      mathe: body.cardPin,
-      seri: body.cardSeri,
-      type: body.cardType,
-      menhgia: body.cardValue,
-      content: new Date().getTime(),
-    });
-
-    const config = {
-      method: 'post',
-      maxBodyLength: Infinity,
-      url: GATEWAY_URL,
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Cookie:
-          'XSRF-TOKEN=eyJpdiI6Imp5dUpFQkxYaEVZbzNnMTA3dGx3QXc9PSIsInZhbHVlIjoiOWdlYnRqODBkVkJBbjVDRzZHVVlvSUdwSW9HWVgxN1N3aDdyUEFOcjFEVTE5WWNNSFhiZkRWbnhiL2RITFRpbXJwbks4SjFlcGRTRXFtTXJNV3dHL2xOK0Z6NDNrK2hZRCtyU0IwRFZaUjMvYWx5VkFLTVZzUVh0dFJiS2locUoiLCJtYWMiOiI2MmIxZWQwM2QxNjhlZGI1MzMwZDBmNjRiNjc0Njg1ZTczMWM0MTIwM2FmMzRlMzE1MTk2OGZmNDQ0ZWVkMjhkIiwidGFnIjoiIn0%3D; laravel_session=Z194Oa47VlLrnmG44FH2BUg37Xcq9yuvflBLaYmx',
-      },
-      data: cardInfo,
-    };
-
-    const { data, status } = await firstValueFrom(
-      this.httpService.request<CheckCardReponse>(config).pipe(),
-    );
-    if (status !== 200) {
-      this.logger.error('Hệ thống nạp có lỗi');
-      throw new HttpException(
-        'Hệ thống thẻ cào đang bảo trì.',
-        HttpStatus.SERVICE_UNAVAILABLE,
+    //#region  banking
+    if (Gateways.AMT === gateway) {
+      const paymentContent = randomstring.generate({
+        length: 10,
+      });
+      const createPaymentBankingDto = new CreatePaymentDto(
+        {
+          ...body,
+          cardType: CardTypes.BANK,
+          comment: `${username}-${paymentContent}`,
+        },
+        username,
+        gateway,
+        undefined,
+        '',
+        PaymentStatus.PENDING,
       );
+      try {
+        const paymentEntity = await this.paymentService.add(
+          createPaymentBankingDto,
+        );
+        return {
+          message: `Vui lòng chuyển khoản với nội dung ${username}-${paymentEntity.id}`,
+        };
+      } catch (ex) {
+        throw new HttpException('Có lỗi từ hệ thống', HttpStatus.BAD_REQUEST);
+      }
     }
+    //#endregion
 
-    if (data?.status != '00') {
-      throw new HttpException(data.msg, HttpStatus.BAD_GATEWAY);
+    //#region  nạp thẻ cào
+    if (Gateways.MOBI_CARD === gateway) {
+      const cardInfo = qs.stringify({
+        APIkey: PARTNER_KEY,
+        mathe: body.cardPin,
+        seri: body.cardSeri,
+        type: body.cardType,
+        menhgia: body.cardValue,
+        content: new Date().getTime(),
+      });
+
+      const config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: GATEWAY_URL,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Cookie:
+            'XSRF-TOKEN=eyJpdiI6Imp5dUpFQkxYaEVZbzNnMTA3dGx3QXc9PSIsInZhbHVlIjoiOWdlYnRqODBkVkJBbjVDRzZHVVlvSUdwSW9HWVgxN1N3aDdyUEFOcjFEVTE5WWNNSFhiZkRWbnhiL2RITFRpbXJwbks4SjFlcGRTRXFtTXJNV3dHL2xOK0Z6NDNrK2hZRCtyU0IwRFZaUjMvYWx5VkFLTVZzUVh0dFJiS2locUoiLCJtYWMiOiI2MmIxZWQwM2QxNjhlZGI1MzMwZDBmNjRiNjc0Njg1ZTczMWM0MTIwM2FmMzRlMzE1MTk2OGZmNDQ0ZWVkMjhkIiwidGFnIjoiIn0%3D; laravel_session=Z194Oa47VlLrnmG44FH2BUg37Xcq9yuvflBLaYmx',
+        },
+        data: cardInfo,
+      };
+
+      const { data, status } = await firstValueFrom(
+        this.httpService.request<CheckCardReponse>(config).pipe(),
+      );
+      if (status !== 200) {
+        this.logger.error('Hệ thống nạp có lỗi');
+        throw new HttpException(
+          'Hệ thống thẻ cào đang bảo trì.',
+          HttpStatus.SERVICE_UNAVAILABLE,
+        );
+      }
+
+      if (data?.status != '00') {
+        throw new HttpException(data.msg, HttpStatus.BAD_GATEWAY);
+      }
+
+      const content = randomstring.generate({
+        length: 15,
+      });
+
+      const createDto = new CreatePaymentDto(
+        { ...body, cardValue: data.amount, comment: `${username}-${content}` },
+        username,
+        gateway,
+        data.transaction_id,
+        'auto',
+        PaymentStatus.PENDING,
+      );
+      try {
+        await this.paymentService.add(createDto);
+        return {
+          message: 'Ghi thẻ thành công, vui lòng đợi kiểm tra.',
+        };
+      } catch (ex: unknown) {
+        const error = ex as Error;
+        throw new HttpException(
+          error?.message || 'Có lỗi từ hệ thống',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
-
-    const content = randomstring.generate({
-      length: 15,
-    });
-
-    const createDto = new CreatePaymentDto(
-      { ...body, cardValue: data.amount, comment: `${username}-${content}` },
-      username,
-      gateway,
-      data.transaction_id,
-      'auto',
-      PaymentStatus.PENDING,
-    );
-    await this.paymentService.add(createDto);
-    throw new HttpException(
-      'Ghi thẻ thành công, vui lòng đợi kiểm tra.',
-      HttpStatus.ACCEPTED,
-    );
+    //#endregion
   }
 
   @Post(':payment/:action')
@@ -254,6 +295,7 @@ export class PaymentController {
     if (!this.pemission(currentUser).granted) {
       throw new HttpException(`Không có quyền truy cập`, HttpStatus.FORBIDDEN);
     }
+
     const payment = await this.paymentService.get(id);
 
     if (!payment) {

@@ -1,62 +1,25 @@
-import { StatusPayment } from '@config';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
 export type IPaymentCallbackDTO = {
-  status: StatusPayment;
-  message?: string;
-  amount?: number;
-  code?: string;
+  status: string;
+  pin?: string;
   serial?: string;
-  request_id?: string;
-  telco?: string;
+  card_type?: string;
+  amount: number;
+  receive_amount: number;
+  noidung?: string;
+  content: string;
 };
 
-export interface IPaymentResponse {
-  trans_id?: string;
-  request_id?: string;
-  amount?: number;
-  value?: number;
-  declared_value: number;
-  telco?: string;
-  serial?: string;
-  code?: string;
+export class PaymentCallbackDTO implements IPaymentCallbackDTO {
+  @ApiProperty()
+  @IsOptional()
   status: string;
-  message?: string;
-  sign?: string;
-  callback_sign?: string;
-}
-
-export interface IPaymentResponseB {
-  trans_id?: string;
-  request_id?: string;
-  amount?: number;
-  value?: number;
-  declared_value: number;
-  telco?: string;
-  serial?: string;
-  code?: string;
-  status: number;
-  message?: string;
-  sign?: string;
-}
-
-export class PaymentCallbackDTO implements IPaymentResponse {
-  @IsOptional()
-  @ApiProperty()
-  status: StatusPayment;
 
   @ApiProperty()
   @IsOptional()
-  message?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  amount?: number;
-
-  @ApiProperty()
-  @IsOptional()
-  code?: string;
+  pin?: string;
 
   @ApiProperty()
   @IsOptional()
@@ -64,75 +27,21 @@ export class PaymentCallbackDTO implements IPaymentResponse {
 
   @ApiProperty()
   @IsOptional()
-  request_id?: string;
+  card_type?: string;
 
   @ApiProperty()
   @IsOptional()
-  telco?: string;
-
-  @IsOptional()
-  @ApiProperty()
-  trans_id?: string;
-
-  @IsOptional()
-  @ApiProperty()
-  value: number;
-
-  @IsOptional()
-  @ApiProperty()
-  declared_value: number;
-
-  @IsOptional()
-  @ApiProperty()
-  sign?: string;
-
-  @IsOptional()
-  @ApiProperty()
-  callback_sign?: string;
-}
-
-export class PaymentCallbackDTOB implements IPaymentResponseB {
-  @IsOptional()
-  @ApiProperty()
-  status: number;
+  amount: number;
 
   @ApiProperty()
   @IsOptional()
-  message?: string;
+  receive_amount: number;
 
   @ApiProperty()
   @IsOptional()
-  amount?: number;
+  noidung?: string;
 
   @ApiProperty()
   @IsOptional()
-  code?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  serial?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  request_id?: string;
-
-  @ApiProperty()
-  @IsOptional()
-  telco?: string;
-
-  @IsOptional()
-  @ApiProperty()
-  trans_id?: string;
-
-  @IsOptional()
-  @ApiProperty()
-  value: number;
-
-  @IsOptional()
-  @ApiProperty()
-  declared_value: number;
-
-  @IsOptional()
-  @ApiProperty()
-  sign?: string;
+  content: string;
 }

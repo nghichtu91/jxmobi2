@@ -1,14 +1,9 @@
 import {
   Gateways,
-  CardPriceList,
-  Cardbonus,
-  ATM_RATE,
   AppResources,
-  ATM_VALUE_ONE,
-  ATM_VALUE_SECOND,
-  ATM_VALUE_THIRD,
   GATEWAY_URL,
   PARTNER_KEY,
+  PaymentStatus,
 } from '@config';
 import {
   Injectable,
@@ -22,22 +17,19 @@ import {
   Logger,
   Query,
 } from '@nestjs/common';
-import {
-  ApiBody,
-  ApiNotFoundResponse,
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { JwtAuth, ReqUser, User, AppPermissionBuilder } from '@shared';
 import {
   CreatePaymentRequest,
   ICreatePaymentRequest,
-} from '../dtos/createPaymentRequest.dto';
+} from '@modules/payment/dtos/createPaymentRequest.dto';
 import { PaymentService } from '../services';
-import { ISearchPaymentParams } from '../dtos';
-import { PaymentEntity } from '../entities';
+import {
+  IPaymentCallbackDTO,
+  ISearchPaymentParams,
+  PaymentCallbackDTO,
+} from '../dtos';
+import { PaymentEntity } from '@modules/payment/entities';
 import dayjs from 'dayjs';
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { CreatePaymentDto } from '../dtos/createPayment.dto';
@@ -45,8 +37,8 @@ import { KTCoinService } from '@modules/jxmobi/services/ktcoin.service';
 import { PaymentUpdateDTO } from '../dtos/update.dto';
 import { HttpService } from '@nestjs/axios';
 import qs from 'qs';
-import { catchError, firstValueFrom } from 'rxjs';
-import { AxiosError } from 'axios';
+import { firstValueFrom } from 'rxjs';
+import randomstring from 'randomstring';
 
 interface IPageReponse<T> {
   pageNum: number;
@@ -65,6 +57,7 @@ interface CheckCardReponse {
   status: any;
   title: string;
   amount?: number;
+  transaction_id?: string;
 }
 @Injectable()
 @Controller('payments')
@@ -92,35 +85,6 @@ export class PaymentController {
       .setCreatorId(currentUser.id)
       .build()
       .grant();
-  }
-
-  /**
-   * @description tính số xu được cộng vào tài khoản.
-   * @param price
-   * @returns
-   */
-  getCoin(price: string | number) {
-    this.logger.log(
-      `[Xu nhận được] ${CardPriceList[price]} khuyến mãi thêm ${
-        Cardbonus * CardPriceList[price]
-      }`,
-    );
-    const bonus = CardPriceList[price] * Cardbonus;
-    return Math.floor(CardPriceList[price] + bonus);
-  }
-
-  getCoinForAtm(price: number) {
-    let bonus = 1;
-    if (price < 1100000) {
-      bonus = ATM_VALUE_ONE;
-    }
-    if (price >= 1100000 && price < 2000000) {
-      bonus = ATM_VALUE_SECOND;
-    }
-    if (price >= 2000000 && price <= 20000000) {
-      bonus = ATM_VALUE_THIRD;
-    }
-    return Math.floor((price / ATM_RATE) * bonus);
   }
 
   @Get(':username')
@@ -194,7 +158,6 @@ export class PaymentController {
     };
   }
 
-  //#region payment
   /**
    * @description api nạp thẻ và ghi thẻ vào đợi kiểm tra
    * @param {Gateways} gateway
@@ -206,11 +169,6 @@ export class PaymentController {
   @JwtAuth()
   @ApiOperation({ summary: 'Nạp thẻ' })
   @ApiBody({ type: CreatePaymentRequest })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: 'Ghi thẻ thành công',
-  })
-  @ApiNotFoundResponse({ description: 'Cổng nạp không hỗ trợ.' })
   async checkout(
     @Param('gateway') gateway: Gateways,
     @Body() body: ICreatePaymentRequest,
@@ -223,13 +181,13 @@ export class PaymentController {
       );
     }
 
-    const data = qs.stringify({
+    const cardInfo = qs.stringify({
       APIkey: PARTNER_KEY,
       mathe: body.cardPin,
       seri: body.cardSeri,
       type: body.cardType,
       menhgia: body.cardValue,
-      content: '1548845151',
+      content: new Date().getTime(),
     });
 
     const config = {
@@ -241,52 +199,42 @@ export class PaymentController {
         Cookie:
           'XSRF-TOKEN=eyJpdiI6Imp5dUpFQkxYaEVZbzNnMTA3dGx3QXc9PSIsInZhbHVlIjoiOWdlYnRqODBkVkJBbjVDRzZHVVlvSUdwSW9HWVgxN1N3aDdyUEFOcjFEVTE5WWNNSFhiZkRWbnhiL2RITFRpbXJwbks4SjFlcGRTRXFtTXJNV3dHL2xOK0Z6NDNrK2hZRCtyU0IwRFZaUjMvYWx5VkFLTVZzUVh0dFJiS2locUoiLCJtYWMiOiI2MmIxZWQwM2QxNjhlZGI1MzMwZDBmNjRiNjc0Njg1ZTczMWM0MTIwM2FmMzRlMzE1MTk2OGZmNDQ0ZWVkMjhkIiwidGFnIjoiIn0%3D; laravel_session=Z194Oa47VlLrnmG44FH2BUg37Xcq9yuvflBLaYmx',
       },
-      data: data,
+      data: cardInfo,
     };
 
-    try {
-      const { data } = await firstValueFrom(
-        this.httpService.request<CheckCardReponse>(config).pipe(
-          catchError((error: AxiosError) => {
-            this.logger.error(error.response.data);
-            throw 'An error happened!';
-          }),
-        ),
-      );
-      //       "00" -> Thẻ thành công
-      // "99" -> thẻ sai mệnh giá
-      // "-10" -> thẻ sai
-      // "-9" -> thẻ chờ duyệt
-      // "2" -> lỗi không kiểm tra được!
-      console.log(data);
-      switch (data.status) {
-        case '00':
-          const createDto = new CreatePaymentDto(body, username, gateway);
-          await this.paymentService.add(createDto);
-          break;
-        case -10:
-        case '-10':
-          return new HttpException(data.msg, HttpStatus.BAD_GATEWAY);
-        case -9:
-        case '-9':
-          return new HttpException(
-            'Thẻ đang chờ kiểm duyệt',
-            HttpStatus.ACCEPTED,
-          );
-        case 2:
-        case '2':
-          return new HttpException(data?.msg, HttpStatus.ACCEPTED);
-        default:
-          break;
-      }
-    } catch (ex) {
-      return new HttpException(
-        'Lỗi nạp thẻ, vui lòng giữ lại thẻ.',
-        HttpStatus.BAD_REQUEST,
+    const { data, status } = await firstValueFrom(
+      this.httpService.request<CheckCardReponse>(config).pipe(),
+    );
+    if (status !== 200) {
+      this.logger.error('Hệ thống nạp có lỗi');
+      throw new HttpException(
+        'Hệ thống thẻ cào đang bảo trì.',
+        HttpStatus.SERVICE_UNAVAILABLE,
       );
     }
+
+    if (data?.status != '00') {
+      throw new HttpException(data.msg, HttpStatus.BAD_GATEWAY);
+    }
+
+    const content = randomstring.generate({
+      length: 15,
+    });
+
+    const createDto = new CreatePaymentDto(
+      { ...body, cardValue: data.amount, comment: `${username}-${content}` },
+      username,
+      gateway,
+      data.transaction_id,
+      'auto',
+      PaymentStatus.PENDING,
+    );
+    await this.paymentService.add(createDto);
+    throw new HttpException(
+      'Ghi thẻ thành công, vui lòng đợi kiểm tra.',
+      HttpStatus.ACCEPTED,
+    );
   }
-  //#endregion
 
   @Post(':payment/:action')
   @JwtAuth()
@@ -311,6 +259,7 @@ export class PaymentController {
     if (!payment) {
       return new HttpException(`Không tìm thấy payment`, HttpStatus.NOT_FOUND);
     }
+    console.log(value);
     try {
       switch (action) {
         case PaymentAdminActions.ACCEPT:
@@ -349,6 +298,34 @@ export class PaymentController {
         'Có lỗi từ hệ thống.',
         HttpStatus.SERVICE_UNAVAILABLE,
       );
+    }
+  }
+
+  @Post('mobicallback')
+  @ApiBody({
+    type: PaymentCallbackDTO,
+  })
+  @ApiOperation({ summary: 'Callback thẻ nạp' })
+  async mobicallback(@Body() body: IPaymentCallbackDTO) {
+    if (body.status != 'thanhcong') {
+      this.paymentService.updateByContent(body.content, PaymentStatus.FAILED);
+      throw new HttpException('Thẻ cào sai', HttpStatus.BAD_REQUEST);
+    } else {
+      try {
+        const payment = await this.paymentService.getByContent(body.content);
+        this.paymentService.updateByContent(
+          body.content,
+          PaymentStatus.SUCCEEDED,
+        );
+        this.ktcoinService.updateKCoinByUserName(
+          payment.userName,
+          body.receive_amount,
+        );
+      } catch (e) {
+        this.logger.warn(
+          `[mobicallback] payment ${body.content}, thẻ đúng nhưng có lỗi trong quá trình cộng ktcoin.`,
+        );
+      }
     }
   }
 }

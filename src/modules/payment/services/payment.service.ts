@@ -7,6 +7,7 @@ import {
   UpdateResult,
   FindOptionsWhere,
   Between,
+  Equal,
 } from 'typeorm';
 import { ISearchPaymentParams } from '../dtos';
 import { ICreatePaymentDto } from '../dtos/createPayment.dto';
@@ -24,6 +25,8 @@ interface IPaymentService {
     paged: number,
     filter: ISearchPaymentParams,
   ): Promise<[PaymentEntity[], number]>;
+  updateByContent(content: string, status: number): Promise<UpdateResult>;
+  getByContent(content: string): Promise<PaymentEntity>;
 }
 
 @Injectable()
@@ -32,6 +35,24 @@ export class PaymentService implements IPaymentService {
     @InjectRepository(PaymentEntity)
     private paymentRepo: Repository<PaymentEntity>,
   ) {}
+  getByContent(content: string): Promise<PaymentEntity> {
+    return this.paymentRepo.findOne({
+      where: {
+        comment: Equal(content),
+      },
+    });
+  }
+
+  updateByContent(content: string, status: number): Promise<UpdateResult> {
+    return this.paymentRepo.update(
+      {
+        status: status,
+      },
+      {
+        comment: content,
+      },
+    );
+  }
 
   totalMoney(isToday?: boolean): Promise<number> {
     const where: FindOptionsWhere<PaymentEntity> = {

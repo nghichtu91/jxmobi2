@@ -1,5 +1,4 @@
 import path from 'path';
-console.log(process.env);
 // Application configuration
 export const apiUrls = process.env.API_URLS.split('|');
 export const apiUrl = apiUrls[0];

@@ -202,8 +202,12 @@ export class PaymentController {
         const paymentEntity = await this.paymentService.add(
           createPaymentBankingDto,
         );
+        const stk = process.env.ATM_STK;
+        const brand = process.env.ATM_BRAND;
+        const cardname = process.env.ATM_NAME;
+
         return {
-          message: `Vui lòng chuyển khoản với nội dung ${username}-${paymentEntity.id}`,
+          message: `Vui lòng chuyển khoản đến stk: ${stk} chủ thẻ: ${cardname}, ngân hàng: ${brand} với nội dung ${username}-${paymentEntity.id}`,
         };
       } catch (ex) {
         throw new HttpException('Có lỗi từ hệ thống', HttpStatus.BAD_REQUEST);

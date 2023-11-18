@@ -46,10 +46,10 @@ export class PaymentService implements IPaymentService {
   updateByContent(content: string, status: number): Promise<UpdateResult> {
     return this.paymentRepo.update(
       {
-        status: status,
+        comment: Equal(content),
       },
       {
-        comment: content,
+        status: status,
       },
     );
   }

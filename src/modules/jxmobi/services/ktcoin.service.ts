@@ -15,6 +15,7 @@ interface IKtcoinService {
     username: string,
     newKtCoin: number,
   ): Promise<UpdateResult>;
+  updateOrCreate(ktoDto: IKTCoinCreate): any;
 }
 
 @Injectable()
@@ -23,6 +24,28 @@ export class KTCoinService implements IKtcoinService {
     @InjectRepository(KTCoinEntity)
     private readonly ktcoinReporitory: Repository<KTCoinEntity>,
   ) {}
+  /**
+   *
+   * @param {IKTCoinCreate} ktoDto
+   * @returns
+   */
+  async updateOrCreate(ktoDto: IKTCoinCreate) {
+    const ktDto = this.ktcoinReporitory.create(ktoDto);
+    const ktCoin = await this.ktcoinReporitory.exist({
+      where: {
+        UserName: ktDto.UserName,
+      },
+    });
+    if (ktCoin) {
+      return this.ktcoinReporitory.update(
+        { UserName: ktDto.UserName },
+        {
+          KCoin: () => `KCoin + ${ktoDto.KCoin}`,
+        },
+      );
+    }
+    return this.ktcoinReporitory.save(ktoDto);
+  }
 
   updateKCoinByUserName(
     username: string,

@@ -9,6 +9,7 @@ export interface IUserReponseDto {
   roles?: string[];
   ktcoin: number;
   isNew: boolean;
+  point1?: number;
 }
 
 export class UserReponseDto implements IUserReponseDto {
@@ -19,14 +20,16 @@ export class UserReponseDto implements IUserReponseDto {
   roles?: string[];
   ktcoin: number;
   isNew: boolean;
+  point1: number;
 
-  constructor({ ID, FullName, LoginName, KtCoin }: IUserModel) {
+  constructor({ ID, FullName, LoginName, KtCoin, Phone }: IUserModel) {
     this.id = ID;
     this.fullName = FullName;
     this.roles = ADMIN_USER == LoginName ? [AppRoles.ADMIN] : [AppRoles.GUEST];
     this.userName = LoginName;
     this.ktcoin = KtCoin?.KCoin || 0;
     this.isNew = false;
+    this.point1 = KtCoin?.KCoin || 0;
+    this.phone = Phone;
   }
-  
 }

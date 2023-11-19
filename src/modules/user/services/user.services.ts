@@ -14,6 +14,7 @@ import { ChangePassWordDTO, UpdateUserDTO } from '../dtos';
 interface IUserService {
   getUser(userName: string): Promise<UserEntity>;
   total(): Promise<number>;
+  findByUserName(userName: string): Promise<UserEntity>;
 }
 
 @Injectable()
@@ -145,10 +146,13 @@ export class UserService implements IUserService {
       where.LoginName = Like(`%${keyword}%`);
     }
     const users = this.userRepository.findAndCount({
-      select: ['ID', 'FullName', 'LoginName'],
+      // select: ['ID', 'FullName', 'LoginName', 'Phone', 'Email'],
       where,
       take: limit,
       skip: offset,
+      relations: {
+        KtCoin: true,
+      },
     });
 
     return users;

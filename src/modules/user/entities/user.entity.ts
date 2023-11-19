@@ -86,7 +86,7 @@ export class UserEntity extends BaseEntity implements IBaseModel<IUserModel> {
   })
   LastLoginTime?: Date;
 
-  @OneToOne(() => KTCoinEntity)
+  @OneToOne(() => KTCoinEntity, (kt) => kt.UserID)
   @JoinColumn([{ name: 'ID', referencedColumnName: 'UserID' }])
   KtCoin?: KTCoinEntity;
 

@@ -31,6 +31,7 @@ import { KTCoinService } from '@modules/jxmobi/services/ktcoin.service';
 import { GiftCodeCreateDto } from '@modules/jxmobi/dtos/giftcode/giftcodeCreate.dto';
 import { GiftCodeService } from '@modules/jxmobi/services/giftcode.service';
 import { GiftCodeModel } from '@modules/jxmobi/dtos/giftcode/giftcode.model';
+import { KTCoinCreateDto } from '@modules/jxmobi/dtos/ktcoinCreate.dto';
 
 enum AdminAction {
   Addxu = 'addxu',
@@ -201,10 +202,14 @@ export class AdminController {
     try {
       switch (action) {
         case AdminAction.Addxu:
-          await this.kTCoinService.updateKCoinByUserName(
-            username,
-            Number(point),
-          );
+          const userEntity = await this.userService.findByUserName(username);
+
+          const ktupdate = new KTCoinCreateDto();
+          ktupdate.KCoin = Number(point);
+          ktupdate.UserID = userEntity.ID;
+          ktupdate.UserName = userEntity.LoginName;
+
+          await this.kTCoinService.updateOrCreate(ktupdate);
           this.logger.log(
             `[${AdminAction.Addxu}] tài khoản ${userCurrent.username} cộng ${point} ktcon vào tài khoản ${username}`,
           );

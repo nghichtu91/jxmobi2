@@ -201,7 +201,7 @@ export class JxmobiController {
 
       if (isUsed) {
         giftcodeReponse.Status = -2;
-        giftcodeReponse.Msg = 'Bạn đã sử dụng gift code.';
+        giftcodeReponse.Msg = 'Bạn đã sử dụng.';
         return JSON.stringify(giftcodeReponse);
       }
 

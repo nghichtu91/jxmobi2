@@ -29,6 +29,7 @@ import { IGiftcodeRequest } from '../dtos/giftcode/giftcodeRequest.dto';
 import { GiftcodeResponse } from '../dtos/giftcode/giftcodeResponse.dto';
 import { GiftCodeService } from '../services/giftcode.service';
 import { GiftcodelogsService } from '../services/giftcodelogs.service';
+import { GiftCodeLogCreateDto } from '../dtos/giftcode/giftcodelogcreate.dto';
 
 @ApiTags('jxmobi')
 @Controller('jxmobi')
@@ -210,6 +211,12 @@ export class JxmobiController {
       if (giftcode) {
         giftcodeReponse.Status = 1;
         giftcodeReponse.GiftItem = giftcode.ItemList;
+        const giftcodeLogCreate = new GiftCodeLogCreateDto({
+          CodeActive,
+          ServerID,
+          RoleActive,
+        });
+        this.giftcodelogsService.create(giftcodeLogCreate);
         this.logger.log(
           `[GiftCode] ${RoleActive} sử dụng gift code ${CodeActive}.`,
         );

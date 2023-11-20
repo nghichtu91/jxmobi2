@@ -102,6 +102,16 @@ export class UserEntity extends BaseEntity implements IBaseModel<IUserModel> {
     }
   }
 
+  @BeforeInsert()
+  craeateAccessToken() {
+    this.Status = 0;
+    this.AccessToken = createHash('md5')
+      .update(this.LoginName)
+      .digest('hex')
+      .toString()
+      .toLocaleUpperCase();
+  }
+
   comparePassword(attempt: string): boolean {
     return (
       createHash('md5')

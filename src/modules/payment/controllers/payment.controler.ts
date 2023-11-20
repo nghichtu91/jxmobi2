@@ -249,6 +249,7 @@ export class PaymentController {
         );
       }
       this.logger.log(JSON.stringify(data));
+      this.logger.log(cardInfo);
       if (data?.status != '00') {
         throw new HttpException(
           data?.msg || 'Có lỗi từ hệ thống',

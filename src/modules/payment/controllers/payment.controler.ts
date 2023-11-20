@@ -248,9 +248,12 @@ export class PaymentController {
           HttpStatus.SERVICE_UNAVAILABLE,
         );
       }
-
+      this.logger.log(JSON.stringify(data));
       if (data?.status != '00') {
-        throw new HttpException(data.msg, HttpStatus.BAD_GATEWAY);
+        throw new HttpException(
+          data?.msg || 'Có lỗi từ hệ thống',
+          HttpStatus.BAD_GATEWAY,
+        );
       }
 
       const content = randomstring.generate({

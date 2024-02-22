@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { UserEntity } from '../entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -21,7 +21,8 @@ interface IUserService {
 export class UserService implements IUserService {
   private loger = new Logger(UserService.name);
   constructor(
-    @InjectRepository(UserEntity)
+    // @InjectRepository(UserEntity)
+    @Inject('USER_REPOSITORY')
     private userRepository: Repository<UserEntity>,
   ) {}
 
@@ -45,12 +46,12 @@ export class UserService implements IUserService {
   }
 
   async userNameIsExist(username: string) {
-    const userNameNumber = await this.userRepository.count({
+    const userNameNumber = await this.userRepository.exist({
       where: {
         LoginName: username,
       },
     });
-    return userNameNumber === 0;
+    return userNameNumber;
   }
 
   async create({

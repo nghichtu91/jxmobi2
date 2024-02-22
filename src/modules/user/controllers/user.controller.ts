@@ -11,7 +11,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { UserService } from '../services';
-import { JwtAuth, User, ReqUser, AppPermissionBuilder } from '@shared';
+import { JwtAuth, User, ReqUser, AppPermissionBuilder } from '@/shared';
 import {
   ApiBadRequestResponse,
   ApiForbiddenResponse,
@@ -24,7 +24,7 @@ import {
 } from '@nestjs/swagger';
 import { ChangePassWordDTO } from '../dtos';
 import { Response } from 'express';
-import { AppResources } from '@config';
+import { AppResources } from '@/config';
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { HttpStatusCode } from 'axios';
 import { IUserReponseDto, UserReponseDto } from '../dtos/userReponse.dto';

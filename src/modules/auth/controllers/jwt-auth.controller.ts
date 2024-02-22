@@ -24,7 +24,7 @@ import {
 import { CreateUserDTO } from '@modules/user/dtos';
 import { JwtRefreshTokenDTO, LoginInputDTO } from '../dtos';
 import { AuthService } from '../services';
-import { JwtRefreshAuth, ReqUser, User } from '@shared';
+import { JwtRefreshAuth, ReqUser, User } from '@/shared';
 import { Response } from 'express';
 import { ForgotPassworDTO } from '../dtos/forgotpass.dto';
 

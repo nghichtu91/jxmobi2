@@ -12,7 +12,7 @@ import {
   Delete,
 } from '@nestjs/common';
 import { UserService } from '../services';
-import { JwtAuth, User, ReqUser, AppPermissionBuilder } from '@shared';
+import { JwtAuth, User, ReqUser, AppPermissionBuilder } from '@/shared';
 import {
   ApiBody,
   ApiOkResponse,
@@ -23,7 +23,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { IUpdateUserDTO } from '../dtos';
-import { AppResources } from '@config';
+import { AppResources } from '@/config';
 import { InjectRolesBuilder, RolesBuilder } from 'nest-access-control';
 import { PaymentService } from '@modules/payment/services';
 import { UserReponseDto } from '../dtos/userReponse.dto';

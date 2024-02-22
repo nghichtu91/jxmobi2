@@ -11,31 +11,33 @@ import { GiftCodeEntity } from './entties/giftcode.entity';
 import { GiftCodeService } from './services/giftcode.service';
 import { GiftcodelogsEntity } from './entties/giftcodelogs.entity';
 import { GiftcodelogsService } from './services/giftcodelogs.service';
+import { UsersModule } from '@/modules/user/user.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      KTCoinEntity,
-      RechageLogsEntity,
-      TranLogsEntity,
-      GiftCodeEntity,
-      GiftcodelogsEntity,
-    ]),
+    UsersModule,
+    // TypeOrmModule.forFeature([
+    //   KTCoinEntity,
+    //   RechageLogsEntity,
+    //   TranLogsEntity,
+    //   GiftCodeEntity,
+    //   GiftcodelogsEntity,
+    // ]),
   ],
   controllers: [JxmobiController],
   providers: [
-    KTCoinService,
-    RechangeService,
-    TranlogsService,
-    GiftCodeService,
-    GiftcodelogsService,
+    //KTCoinService,
+    //RechangeService,
+    //TranlogsService,
+    //GiftCodeService,
+    //GiftcodelogsService,
   ],
   exports: [
-    KTCoinService,
-    RechangeService,
-    TranlogsService,
-    GiftCodeService,
-    GiftcodelogsService,
+    //KTCoinService,
+    //RechangeService,
+    //TranlogsService,
+    //GiftCodeService,
+    //GiftcodelogsService,
   ],
 })
 export class JxMobiModule {}

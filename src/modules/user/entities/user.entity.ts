@@ -9,12 +9,13 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   OneToOne,
+  CreateDateColumn,
 } from 'typeorm';
 import { IUserModel } from '../dtos';
-import { IBaseModel } from '@shared';
+import { IBaseModel } from '@/shared';
 import { KTCoinEntity } from '@modules/jxmobi/entties/ktcoin.entity';
 
-@Entity({ name: 'LoginTables' })
+@Entity({ name: 'accounts' })
 export class UserEntity extends BaseEntity implements IBaseModel<IUserModel> {
   @PrimaryGeneratedColumn('increment')
   @PrimaryColumn({ name: 'ID', type: 'int' })
@@ -22,69 +23,34 @@ export class UserEntity extends BaseEntity implements IBaseModel<IUserModel> {
 
   @Column({
     type: 'varchar',
-    name: 'LoginName',
+    name: 'username',
   })
   LoginName: string;
 
   @Column({
     type: 'varchar',
-    name: 'Password',
+    name: 'password',
   })
   Password: string;
 
   @Column({
     type: 'varchar',
-    name: 'Phone',
+    name: 'phone',
   })
   Phone?: string;
-
-  @Column({
-    type: 'int',
-    name: 'Status',
-  })
   Status?: number;
-
-  @Column({
-    type: 'nvarchar',
-    name: 'FullName',
-  })
   FullName?: string;
 
   @Column({
     type: 'varchar',
-    name: 'Email',
+    name: 'email',
   })
   Email?: string;
 
-  @Column({
-    type: 'datetime',
-    name: 'TokenTimeExp',
+  @CreateDateColumn({
+    name: 'createAt'
   })
-  TokenTimeExp?: Date;
-
-  @Column({
-    type: 'varchar',
-    name: 'AccessToken',
-  })
-  AccessToken?: string;
-
-  @Column({
-    type: 'varchar',
-    name: 'Note',
-  })
-  Note?: string;
-
-  @Column({
-    type: 'int',
-    name: 'LastServerLogin',
-  })
-  LastServerLogin?: number;
-
-  @Column({
-    type: 'datetime',
-    name: 'LastLoginTime',
-  })
-  LastLoginTime?: Date;
+  createAt?: Date;
 
   @OneToOne(() => KTCoinEntity, (kt) => kt.UserID)
   @JoinColumn([{ name: 'ID', referencedColumnName: 'UserID' }])
@@ -102,16 +68,11 @@ export class UserEntity extends BaseEntity implements IBaseModel<IUserModel> {
     }
   }
 
-  @BeforeInsert()
-  craeateAccessToken() {
-    this.Status = 0;
-    this.AccessToken = createHash('md5')
-      .update(this.LoginName)
-      .digest('hex')
-      .toString()
-      .toLocaleUpperCase();
+  @BeforeInsert() 
+  dataCreate(): void {
+    this.createAt = new Date();
   }
-
+  
   comparePassword(attempt: string): boolean {
     return (
       createHash('md5')

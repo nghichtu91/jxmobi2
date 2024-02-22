@@ -6,8 +6,6 @@ import compression from 'compression';
 import path, { dirname, isAbsolute, join } from 'path';
 
 import {
-  apiUrl,
-  clientUrl,
   enableLogging,
   logDir,
   logFormat,

@@ -9,8 +9,7 @@ import { UsersModule } from '@modules/user/user.module';
 import { AuthModule } from '@modules/auth/auth.module';
 import { CommonModule } from '@modules/common/common.module';
 //#endregion
-import { roles } from '@config';
-import ormconfig from '@config/databases/ormconfig';
+import { roles } from '@/config';
 import { AppController } from '@modules/app/controllers/app.controller';
 import { AppService } from '@modules/app/services';
 
@@ -20,14 +19,9 @@ import { AppService } from '@modules/app/services';
       ttl: 60,
       limit: 10,
     }),
-    TypeOrmModule.forRoot(ormconfig),
     PassportModule,
     AccessControlModule.forRoles(roles),
     AuthModule,
-    // PaymentModule,
-    //UsersModule,
-    //SmsModule,
-    // JxMobiModule,
     CommonModule,
   ],
   controllers: [AppController],

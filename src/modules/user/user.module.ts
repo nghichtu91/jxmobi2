@@ -8,6 +8,8 @@ import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import { PaymentModule } from '@modules/payment/payment.module';
 import { JxMobiModule } from '@modules/jxmobi/jxmobi.module';
+import { userProviders} from './user.providers';
+import { DatabaseModule } from '@modules/database/database.module';
 
 @Module({
   imports: [
@@ -18,12 +20,12 @@ import { JxMobiModule } from '@modules/jxmobi/jxmobi.module';
         }),
       ],
     }),
-    TypeOrmModule.forFeature([UserEntity]),
-    PaymentModule,
-    JxMobiModule,
+    DatabaseModule,
+    // PaymentModule,
+    // JxMobiModule,
   ],
-  providers: [IsUserAlreadyExistConstraint, UserService],
-  controllers: [UserController, AdminController],
+  providers: [...userProviders, IsUserAlreadyExistConstraint, UserService],
+  controllers: [UserController],
   exports: [UserService],
 })
 export class UsersModule {}

@@ -20,7 +20,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "paths": {
-      "@*": ["src/*"],
+      "@/*": ["src/*"],
       "@modules/*": ["src/modules/*"],
       "@auth/*": ["src/modules/auth/*"],
       "@app/*": ["src/modules/app/*"],

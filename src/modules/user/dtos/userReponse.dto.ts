@@ -1,4 +1,4 @@
-import { ADMIN_USER, AppRoles } from '@config';
+import { ADMIN_USER, AppRoles } from '@/config';
 import { IUserModel } from './user.model';
 
 export interface IUserReponseDto {

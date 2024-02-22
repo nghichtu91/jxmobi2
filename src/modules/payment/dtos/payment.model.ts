@@ -1,4 +1,4 @@
-import { CardTypes } from '@config';
+import { CardTypes } from '@/config';
 
 export interface IPaymentModel {
   id: number;

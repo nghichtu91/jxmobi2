@@ -1,7 +1,7 @@
 import { RolesBuilder } from 'nest-access-control';
 
-import { AppResources } from '@config';
-import { Action, AppPermission, IReqUser } from '@shared';
+import { AppResources } from '@/config';
+import { Action, AppPermission, IReqUser } from '@/shared';
 
 export class AppPermissionBuilder {
   private rolesBuilder: RolesBuilder;

@@ -1,4 +1,4 @@
-import { IBaseModel } from '@shared';
+import { IBaseModel } from '@/shared';
 import {
   BaseEntity,
   BeforeInsert,

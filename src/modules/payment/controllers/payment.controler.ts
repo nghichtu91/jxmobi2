@@ -5,7 +5,7 @@ import {
   PARTNER_KEY,
   PaymentStatus,
   CardTypes,
-} from '@config';
+} from '@/config';
 import {
   Injectable,
   Controller,
@@ -19,7 +19,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { JwtAuth, ReqUser, User, AppPermissionBuilder } from '@shared';
+import { JwtAuth, ReqUser, User, AppPermissionBuilder } from '@/shared';
 import {
   CreatePaymentRequest,
   ICreatePaymentRequest,

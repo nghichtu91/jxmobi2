@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { IBaseModel } from '@shared';
+import { IBaseModel } from '@/shared';
 import { IKTCoin } from '@modules/jxmobi/dtos';
 
 @Entity({ name: 'KTCoins' })

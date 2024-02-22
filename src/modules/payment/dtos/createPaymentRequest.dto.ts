@@ -1,7 +1,7 @@
 import { IPaymentModel } from './payment.model';
 import { IsNumber, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { CardTypes } from '@config';
+import { CardTypes } from '@/config';
 
 export type ICreatePaymentRequest = Pick<
   IPaymentModel,

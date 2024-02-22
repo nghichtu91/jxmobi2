@@ -1,6 +1,6 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
 
-import { LocalAuthGuard } from '@shared';
+import { LocalAuthGuard } from '@/shared';
 
 /**
  * Guard for local login

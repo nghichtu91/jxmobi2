@@ -5,7 +5,7 @@ import parseDuration from 'parse-duration';
 import passport from 'passport';
 import flash = require('connect-flash');
 import { Logger } from '@nestjs/common';
-import { redisPort, redisUrl, sessionMaxAge, sessionSecret } from '@config';
+import { redisPort, redisUrl, sessionMaxAge, sessionSecret } from '@/config';
 import { createClient } from 'redis';
 import connectRedis from 'connect-redis';
 

@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDTO, UpdateUserDTO } from '@modules/user/dtos';
 import { UserEntity } from '@modules/user/entities';
-import { IReqUser } from '@shared';
+import { IReqUser } from '@/shared';
 import { UserService } from '@user/services';
 import parseDuration from 'parse-duration';
 import { ForgotPassworDTO, LoginInputDTO } from '../dtos';
@@ -11,7 +11,7 @@ import {
   AppRoles,
   jwtRefreshTokenExpiration,
   jwtTokenExpiration,
-} from '@config';
+} from '@/config';
 
 @Injectable()
 export class AuthService {

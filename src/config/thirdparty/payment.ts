@@ -9,7 +9,7 @@ import {
   CARD_VALUE_SIX,
   CARD_VALUE_THIRD,
   PARTNERID,
-} from '@config/application';
+} from '@/config/application';
 
 export enum CardTypes {
   VIETTEL = 'Viettel',

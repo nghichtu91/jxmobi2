@@ -10,8 +10,8 @@ import {
   BeforeUpdate,
 } from 'typeorm';
 import { IPaymentModel } from '../dtos';
-import { IBaseModel } from '@shared';
-import { CardTypes } from '@config';
+import { IBaseModel } from '@/shared';
+import { CardTypes } from '@/config';
 
 @Entity({ name: 'payment_card_log' })
 export class PaymentEntity

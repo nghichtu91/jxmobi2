@@ -1,8 +1,8 @@
 import { Permission } from 'accesscontrol';
 import { RolesBuilder } from 'nest-access-control';
 
-import { AppResources } from '@config';
-import { IReqUser } from '@shared';
+import { AppResources } from '@/config';
+import { IReqUser } from '@/shared';
 
 export type Action = 'read' | 'create' | 'update' | 'delete';
 

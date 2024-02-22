@@ -1,6 +1,6 @@
 import { ICreatePaymentRequest } from './createPaymentRequest.dto';
 import { IPaymentModel } from './payment.model';
-import { CardTypes } from '@config';
+import { CardTypes } from '@/config';
 
 export type ICreatePaymentDto = Omit<
   IPaymentModel,

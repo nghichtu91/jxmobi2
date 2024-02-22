@@ -3,7 +3,7 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 
 import { ACGuard, Role, UseRoles } from 'nest-access-control';
 
-import { JwtAuthGuard } from '@shared';
+import { JwtAuthGuard } from '@/shared';
 /**
  * Guard for verifying token
  * @returns JwtAuth decorator

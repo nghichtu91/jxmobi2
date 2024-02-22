@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   BeforeInsert,
 } from 'typeorm';
-import { IBaseModel } from '@shared';
+import { IBaseModel } from '@/shared';
 import { IRechageLogs } from '@modules/jxmobi/dtos';
 
 @Entity({ name: 'RechageLogs' })

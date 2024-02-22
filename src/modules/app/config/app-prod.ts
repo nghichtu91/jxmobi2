@@ -11,7 +11,7 @@ import {
   logFormat,
   onlyErrorRequests,
   WORKING_DIR,
-} from '@config';
+} from '@/config';
 
 /**
  * Application config for production environment

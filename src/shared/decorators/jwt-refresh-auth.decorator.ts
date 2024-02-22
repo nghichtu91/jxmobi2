@@ -1,6 +1,6 @@
 import { applyDecorators, UseGuards } from '@nestjs/common';
 
-import { JwtRefreshGuard } from '@shared';
+import { JwtRefreshGuard } from '@/shared';
 
 /**
  * Guard for refresh token

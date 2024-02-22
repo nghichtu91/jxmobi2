@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { IGiftcodelogModel } from '../dtos/giftcode/giftcodelog.model';
-import { IBaseModel } from '@shared';
+import { IBaseModel } from '@/shared';
 
 @Entity({ name: 'GiftCodeLogs' })
 export class GiftcodelogsEntity

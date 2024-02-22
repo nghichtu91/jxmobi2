@@ -5,7 +5,7 @@ import {
 
 import _ from 'lodash';
 
-import { AppRoles } from '@config';
+import { AppRoles } from '@/config';
 
 export const rolesArray = Object.values(AppRoles);
 
